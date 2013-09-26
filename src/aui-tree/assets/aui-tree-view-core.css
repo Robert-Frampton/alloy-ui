@@ -50,9 +50,9 @@
 /* TreeNodeCheck */
 
 .tree-node-checkbox-container {
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=25)";
-    filter: alpha(opacity=25);
-    opacity: .25;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+    filter: alpha(opacity=70);
+    opacity: .7;
 }
 
 .tree-node-checked .tree-node-checkbox-container {
