@@ -264,6 +264,8 @@ A.mix(
 
 			var bodyElClone = bodyEl.cloneNode(true);
 
+			bodyClone.append(bodyElClone);
+
 			var newNodes = bodyElClone.getElementsByTagName(STR_STAR);
 
 			if (length == newNodes.length) {
