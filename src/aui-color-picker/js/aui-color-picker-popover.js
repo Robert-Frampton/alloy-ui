@@ -52,6 +52,17 @@ var ColorPickerPopover = A.Base.create(_NAME, A.Popover, [
         },
 
         /**
+         * Constrains 'ColorPickerPopover' to the viewport.
+         *
+         * @attribute constrain
+         * @type {Boolean}
+         */
+         constrain: {
+            validator: Lang.isBoolean,
+            value: true
+         },
+
+        /**
          * Determines if `ColorPickerPopover` is visible or not.
          *
          * @attribute visible
