@@ -1,0 +1,6 @@
+@media (min-width: 750px) {
+	.affix-top {
+		top: 2em;
+		position: fixed;
+	}
+}
