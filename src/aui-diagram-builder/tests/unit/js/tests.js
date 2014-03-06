@@ -54,7 +54,33 @@ YUI.add('aui-diagram-builder-tests', function(Y) {
             Y.Assert.areNotEqual(startP2, endP2);
 
             largeContent.remove();
+        }, 
+
+        /**
+         * @tests AUI-1158
+         */
+        'test connector does not jump after scroll and mouseover': function() {
+            var start = "",
+                end = "";
+
+            var line = Y.all('path').get('nodes');
+
+            for (var i = 0; i < line.length; i++) {
+                var path = line[i],
+                    width = path.getAttribute('width');
+
+                if (width > 0) {
+                    start = path.getAttribute('d');
+                    path.simulate('mouseout');
+                    end = path.getAttribute('d');
+
+                    if (start !== end) {break;}
+                }
+            }
+
+            Y.Assert.areEqual(start, end);  
         }
+        
     }));
 
     Y.Test.Runner.add(suite);

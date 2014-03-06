@@ -1011,9 +1011,15 @@ var TreeNode = A.Component.create({
             if (!instance.isLeaf()) {
                 var container = instance.get(CONTAINER);
                 var contentBox = instance.get(CONTENT_BOX);
+                var ownerTree = instance.get(OWNER_TREE);
+                var treeHitArea = contentBox.one(DOT + CSS_TREE_HITAREA);
 
                 if (val) {
                     contentBox.replaceClass(CSS_TREE_COLLAPSED, CSS_TREE_EXPANDED);
+
+                    if (!ownerTree && treeHitArea) {
+                        treeHitArea.replaceClass(CSS_ICON_ICON_PLUS, CSS_ICON_ICON_MINUS);
+                    }
 
                     if (container) {
                         container.show();
@@ -1021,6 +1027,10 @@ var TreeNode = A.Component.create({
                 }
                 else {
                     contentBox.replaceClass(CSS_TREE_EXPANDED, CSS_TREE_COLLAPSED);
+
+                    if (!ownerTree && treeHitArea) {
+                        treeHitArea.replaceClass(CSS_ICON_ICON_MINUS, CSS_ICON_ICON_PLUS);
+                    }
 
                     if (container) {
                         container.hide();
@@ -1638,8 +1648,18 @@ var TreeNodeTask = A.Component.create({
 
             instance.eachParent(
                 function(parentNode) {
-                    if (isTreeNodeTask(parentNode) && !parentNode.isChecked()) {
-                        parentNode.get(CONTENT_BOX).addClass(CSS_TREE_NODE_CHILD_UNCHECKED);
+                    if (isTreeNodeTask(parentNode)) {
+                        var hasUncheckedChild = false;
+
+                        parentNode.eachChildren(function(child) {
+                            if ((child !== instance) && !child.isChecked()) {
+                                hasUncheckedChild = true;
+                            }
+                        });
+
+                        if (!hasUncheckedChild) {
+                            parentNode.get(CONTENT_BOX).removeClass(CSS_TREE_NODE_CHILD_UNCHECKED);
+                        }
                     }
                 }
             );
@@ -1673,8 +1693,8 @@ var TreeNodeTask = A.Component.create({
 
             instance.eachParent(
                 function(parentNode) {
-                    if (isTreeNodeTask(parentNode) && !parentNode.isChecked()) {
-                        parentNode.get(CONTENT_BOX).removeClass(CSS_TREE_NODE_CHILD_UNCHECKED);
+                    if (isTreeNodeTask(parentNode) && parentNode.isChecked()) {
+                        parentNode.get(CONTENT_BOX).addClass(CSS_TREE_NODE_CHILD_UNCHECKED);
                     }
                 }
             );
