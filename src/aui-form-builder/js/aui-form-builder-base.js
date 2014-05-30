@@ -503,7 +503,7 @@ var FormBuilder = A.Component.create({
 
             instance.tabView.enableTab(A.FormBuilder.SETTINGS_TAB);
             instance.tabView.selectChild(A.FormBuilder.SETTINGS_TAB);
-            instance.propertyList.set('data', instance.getFieldProperties(field));
+            instance.propertyList.set('data', instance.getFieldProperties(field, true));
         },
 
         /**
