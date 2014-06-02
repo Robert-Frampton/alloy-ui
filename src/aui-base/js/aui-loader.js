@@ -280,6 +280,7 @@ Y.mix(YUI.Env[Y.version].modules, {
     "aui-datatable-core": {
         "requires": [
             "aui-datatable-body",
+            "aui-datatable-head",
             "datatable-base",
             "event-key",
             "aui-event-base"
@@ -315,6 +316,11 @@ Y.mix(YUI.Env[Y.version].modules, {
             "aui-datatable-radio-cell-editor",
             "aui-datatable-text-cell-editor",
             "aui-datatable-text-area-cell-editor"
+        ]
+    },
+    "aui-datatable-head": {
+        "requires": [
+            "datatable-head"
         ]
     },
     "aui-datatable-highlight": {

@@ -21,6 +21,7 @@
     "aui-datatable-core": {
         "requires": [
             "aui-datatable-body",
+            "aui-datatable-head",
             "datatable-base",
             "event-key",
             "aui-event-base"
@@ -104,6 +105,12 @@
     "aui-datatable-cell-editor-support": {
         "requires": [
             "datatable-base"
+        ]
+    },
+
+    "aui-datatable-head": {
+        "requires": [
+            "datatable-head"
         ]
     },
 

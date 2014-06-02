@@ -49,6 +49,12 @@
             ]
         },
 
+        "aui-datatable-head": {
+            "jsfiles": [
+                "js/aui-datatable-head.js"
+            ]
+        },
+
         "aui-datatable-highlight": {
             "jsfiles": [
                 "js/aui-datatable-highlight.js"
