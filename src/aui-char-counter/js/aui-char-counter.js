@@ -43,6 +43,17 @@ var CharCounter = A.Component.create({
      */
     ATTRS: {
         /**
+         * Sets the `aria-label` for the Char Counter input.
+         *
+         * @attribute ariaLabelRemaining
+         * @type String
+         */
+        ariaLabel: {
+            value: 'characters remaining',
+            validator: L.isString
+        },
+
+        /**
          * Node or Selector to display the information of the counter.
          *
          * @attribute counter
@@ -149,11 +160,13 @@ var CharCounter = A.Component.create({
             var counter = instance.get('counter');
 
             if (counter) {
-                var value = instance.get('input').val();
+                var value = instance.get('input').val(),
+                    counterValue = instance.get('maxLength') - value.length,
+                    label = counterValue + ' ' + instance.get('ariaLabel');
 
-                counter.html(
-                    instance.get('maxLength') - value.length
-                );
+                counter.html(counterValue);
+
+                instance.get('input').setAttribute('aria-label', label);
             }
         },
 
