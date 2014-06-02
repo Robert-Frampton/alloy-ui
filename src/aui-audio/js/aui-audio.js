@@ -421,7 +421,7 @@ var AudioImpl = A.Component.create({
             var audio = instance._audio,
                 boundingBox = instance.get('boundingBox');
 
-            audio.setAttribute('aria-label', this.get('ariaLabel'));
+            audio.setAttribute('aria-label', instance.get('ariaLabel'));
 
             boundingBox.setAttribute('role', 'application');
         },
