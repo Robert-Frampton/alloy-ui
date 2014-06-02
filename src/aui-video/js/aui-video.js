@@ -277,17 +277,6 @@ var Video = A.Component.create({
             return sourceNode;
         },
 
-        _setAriaElements: function() {
-            var instance = this;
-
-            var video = instance._video,
-                boundingBox = instance.get('boundingBox');
-
-            video.setAttribute('aria-label', this.get('ariaLabel'));
-
-            boundingBox.setAttribute('role', 'application');
-        },
-
         /**
          * Render SWF in DOM.
          *
@@ -412,6 +401,17 @@ var Video = A.Component.create({
             instance.get('contentBox').append(video);
 
             instance._video = video;
+        },
+
+        _setAriaElements: function() {
+            var instance = this;
+
+            var video = instance._video,
+                boundingBox = instance.get('boundingBox');
+
+            video.setAttribute('aria-label', this.get('ariaLabel'));
+
+            boundingBox.setAttribute('role', 'application');
         },
 
         /**
