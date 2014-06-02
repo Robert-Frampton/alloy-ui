@@ -409,7 +409,7 @@ var Video = A.Component.create({
             var video = instance._video,
                 boundingBox = instance.get('boundingBox');
 
-            video.setAttribute('aria-label', this.get('ariaLabel'));
+            video.setAttribute('aria-label', instance.get('ariaLabel'));
 
             boundingBox.setAttribute('role', 'application');
         },
