@@ -214,6 +214,7 @@ A.mix(DataTableSelection.prototype, {
 
         if (activeCell) {
             activeCell.setAttribute('tabindex', 0).focus();
+            activeCell.removeAttribute('tabindex');
         }
     },
 
@@ -230,7 +231,8 @@ A.mix(DataTableSelection.prototype, {
         instance._selectionKeyHandler = A.getDoc().on(
             'key', A.bind(instance._onSelectionKey, instance), 'down:enter,37,38,39,40');
 
-        instance.after('activeCoordChange', instance._afterActiveCellIndexChange);
+        instance.after('activeCoordChange', instance._afterActiveCoordChange);
+        instance.after('render', instance._setFirstCellTabbable);
         instance.delegate('mouseup', A.bind(instance._onSelectionMouseUp, instance), '.' + classNames.cell);
         instance.delegate('mousedown', A.bind(instance._onSelectionMouseDown, instance), '.' + classNames.cell);
         instance.delegate('mouseenter', A.bind(instance._onSelectionMouseEnter, instance), '.' + classNames.cell);
@@ -414,6 +416,29 @@ A.mix(DataTableSelection.prototype, {
         }
 
         return coords;
+    },
+
+    _selectCell: function(event, cell) {
+        console.log('cell: ', cell);
+        var instance = this;
+
+        var coords = instance.getCoord(cell);
+
+        instance._selectionSeed = cell;
+        instance._selectionStart = instance._selectionEnd = instance.getCoord(cell);
+
+        instance.set('activeCoord', coords);
+    },
+
+    _setFirstCellTabbable: function() {
+        var instance = this,
+            classNames = instance.CLASS_NAMES_SELECTION,
+            firstCell = instance._tableNode.one('.' + classNames.cell);
+
+        firstCell.setAttribute('tabindex', 0);
+        console.log('firstCell: ', firstCell);
+
+        firstCell.once('focus', A.rbind(instance._selectCell, instance, firstCell));
     },
 
     /**
