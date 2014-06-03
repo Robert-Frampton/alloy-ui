@@ -66,6 +66,8 @@ A.Modal = A.Base.create('modal', A.Widget, [
         instance._applyPlugin(instance._onUserInitInteraction);
 
         instance._eventHandles = eventHandles;
+
+        instance._toggleParentScrollClass(instance.get('visible'));
     },
 
     /**
@@ -159,9 +161,12 @@ A.Modal = A.Base.create('modal', A.Widget, [
      * @protected
      */
     _afterVisibleChange: function(event) {
-        var instance = this;
+        var instance = this,
+            newVal = event.newVal;
 
-        if (!event.newVal && instance.get('destroyOnHide')) {
+        instance._toggleParentScrollClass(newVal);
+
+        if (!newVal && instance.get('destroyOnHide')) {
             A.soon(A.bind('destroy', instance));
         }
     },
@@ -279,6 +284,37 @@ A.Modal = A.Base.create('modal', A.Widget, [
     },
 
     /**
+     * Sets a CSS class to the html and body element to disable scrolling in parent window.
+     *
+     * @method _setParentScrollClass
+     * @param set
+     * @protected
+     */
+    _toggleParentScrollClass: function(force) {
+        var instance = this;
+
+        if (!instance.get('parentScrollable')) {
+            var body = instance._bodyEl,
+                documentEl = instance._documentEl;
+
+            if (!body) {
+                body = A.getBody();
+
+                instance._bodyEl = body;
+            }
+
+            if (!documentEl) {
+                documentEl = A.getDoc().get('documentElement');
+
+                instance._documentEl = documentEl;
+            }
+
+            body.toggleClass('scroll-disabled', force);
+            documentEl.toggleClass('scroll-disabled', force);
+        }
+    },
+
+    /**
      * Sync width/height dimensions on resize.
      *
      * @method _syncResizeDimensions
@@ -366,6 +402,18 @@ A.Modal = A.Base.create('modal', A.Widget, [
                     }
                 ]
             }
+        },
+
+        /**
+         * Determine if parent window should be scrollable or not.
+         *
+         * @attribute parentScrollable
+         * @default true
+         * @type Boolean
+         */
+        parentScrollable: {
+            validator: Lang.isBoolean,
+            value: true
         },
 
         /**

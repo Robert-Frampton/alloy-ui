@@ -14,20 +14,33 @@
 </head>
 <body class="yui3-skin-sam">
     <h1>AlloyUI - Modal</h1>
-    <div id="content"></div>
+    <div id="content">
+        <p id="destroyOnHideValue"></p>
+        <p id="parentScrollableValue"></p>
+        <button class="btn btn-default" id="showDialog">Show Dialog</button>
+        <button class="btn btn-default" id="createNewDialog">Create Dialog</button>
+        <button class="btn btn-default" id="destroyOnHideToggle">Toggle destroyOnHide</button>
+        <button class="btn btn-default" id="parentScrollableToggle">Toggle parentScrollable</button>
+        <p style="width: 250px">
+            <br>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse ornare tempus elementum. Aliquam erat volutpat. Sed vel ipsum urna. Curabitur laoreet lobortis mauris, semper venenatis augue mattis eu. Duis ornare ut urna vel convallis. Fusce erat quam, tincidunt eget blandit ac, porttitor ut elit. Proin facilisis tortor vitae lacus sodales tempus. Donec rutrum risus eu risus auctor aliquet. Cras vel enim iaculis, rhoncus ligula ut, ultrices magna. Ut semper hendrerit odio ac vehicula. Sed dapibus, magna vel pretium faucibus, nisl justo mollis risus, eu malesuada odio elit at elit. Morbi ipsum justo, blandit vel venenatis sed, accumsan at velit. Pellentesque id mi libero. In hac habitasse platea dictumst. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Quisque lorem velit, volutpat et pretium eu, semper sit amet urna.
+            <br><br>
+            Nullam et metus nec erat egestas consequat. Sed lacinia, tellus a consequat fringilla, justo lectus commodo leo, at imperdiet ante diam vel ipsum. Donec rutrum lorem quis mauris convallis, sed molestie magna faucibus. Pellentesque a tellus non lectus sagittis luctus porta a justo. Pellentesque viverra porttitor tellus quis tempus. Vestibulum ipsum arcu, sagittis at convallis at, aliquam ac dui. Morbi felis tortor, ornare id dignissim nec, sagittis ut tellus. Cras at tortor feugiat, vehicula est eu, convallis mi. Phasellus eu nisi ornare, auctor odio id, sollicitudin enim. Fusce eu iaculis purus, eu vestibulum augue. Vestibulum blandit, risus placerat tempus faucibus, orci diam iaculis massa, ac tincidunt eros enim sed sem. Sed eleifend id mi at consequat.
+            <br><br>
+            Fusce porta sapien ut vestibulum aliquet. Sed non quam nunc. Vestibulum elementum in sem in gravida. Vestibulum eleifend eu sapien sed iaculis. Etiam erat sem, lacinia in erat vel, hendrerit tincidunt nibh. Sed ullamcorper lacus libero, eget laoreet dui placerat et. Mauris vulputate, purus nec accumsan luctus, ipsum enim porttitor libero, id rutrum lectus nisl condimentum nisi. Ut pellentesque ante eu sapien lacinia adipiscing. Integer id lectus id dui commodo auctor. Sed vitae imperdiet enim. Nam velit enim, dictum non euismod ut, tempus sit amet ligula.
+        </p>
+    </div>
     <script>
-    YUI({ filter:'raw' }).use('aui-modal', 'resize-proxy', function(Y) {
-
-        console.time('How long does it take?');
-
-        var modal = new Y.Modal({
+    YUI({ filter:'raw' }).use('aui-modal', 'aui-node', 'resize-proxy', function(Y) {
+        var config = {
             bodyContent: 'One fine body…',
             centered: true,
             cssClass: 'foo',
-            destroyOnHide: true,
+            // destroyOnHide: true,
             headerContent: '<h3>Modal header</h3>',
             // height: 400,
             modal: true,
+            parentScrollable: false,
             render: '#content',
             visible: true,
             // draggable: false,
@@ -48,8 +61,12 @@
             //         { icon: 'Footer' }
             //     ]
             // }
-        }).render();
+        };
 
+        console.time('How long does it take?');
+
+        var modal = new Y.Modal(config).render();
+        
         modal.addToolbar([
             {
                 label: 'Cancel',
@@ -67,6 +84,40 @@
         ]);
 
         console.timeEnd('How long does it take?');
+
+        Y.one('#destroyOnHideValue').html('destroyOnHide: ' + modal.get('destroyOnHide'));
+        Y.one('#parentScrollableValue').html('parentScrollable: ' + modal.get('parentScrollable'));
+
+        Y.one('#createNewDialog').on('click', function() {
+            if (modal.get('destroyed')) {
+                modal = new Y.Modal(config).render();
+
+                Y.one('#destroyOnHideValue').html('destroyOnHide: ' + modal.get('destroyOnHide'));
+                Y.one('#parentScrollableValue').html('parentScrollable: ' + modal.get('parentScrollable'));
+            }
+        });
+
+        Y.one('#destroyOnHideToggle').on('click', function() {
+            var destroyOnHide = !modal.get('destroyOnHide');
+
+            modal.set('destroyOnHide', destroyOnHide);
+
+            Y.one('#destroyOnHideValue').html('destroyOnHide: ' + modal.get('destroyOnHide'));
+        });
+
+        Y.one('#parentScrollableToggle').on('click', function() {
+            var parentScrollable = !modal.get('parentScrollable');
+
+            modal.set('parentScrollable', parentScrollable);
+
+            Y.one('#parentScrollableValue').html('parentScrollable: ' + modal.get('parentScrollable'));
+        });
+
+        Y.one('#showDialog').on('click', function() {
+            modal.show();
+        });
+
+
 
     });
     </script>
