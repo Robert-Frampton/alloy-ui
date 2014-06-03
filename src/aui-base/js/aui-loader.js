@@ -281,6 +281,7 @@ Y.mix(YUI.Env[Y.version].modules, {
         "requires": [
             "aui-datatable-body",
             "aui-datatable-head",
+            "aui-datatable-sort",
             "datatable-base",
             "event-key",
             "aui-event-base"
@@ -352,6 +353,11 @@ Y.mix(YUI.Env[Y.version].modules, {
             "aui-datatable-core"
         ],
         "skinnable": true
+    },
+    "aui-datatable-sort": {
+        "requires": [
+            "datatable-sort"
+        ]
     },
     "aui-datatable-text-area-cell-editor": {
         "requires": [

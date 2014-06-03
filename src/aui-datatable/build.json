@@ -73,6 +73,12 @@
             ]
         },
 
+        "aui-datatable-sort": {
+            "jsfiles": [
+                "js/aui-datatable-sort.js"
+            ]
+        },
+
         "aui-datatable-text-cell-editor": {
             "jsfiles": [
                 "js/aui-datatable-text-cell-editor.js"
