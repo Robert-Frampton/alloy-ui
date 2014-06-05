@@ -15,18 +15,30 @@
 function DataTableSortable() {}
 
 /**
- * attrs...
+ * Static property used to define the default attribute
+ * configuration for the DataTableSortable.
  *
  * @property ATTRS
  * @type Object
  * @static
  */
 DataTableSortable.ATTRS = {
+
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @attribute captionClass
+     */
     captionClass: {
         validator: A.Lang.isString,
         value: 'sr-only'
     },
 
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @attribute strings
+     */
     strings: {
         value: {
             sorted: 'sorted',
@@ -52,6 +64,13 @@ DataTableSortable.prototype = {
             '<span aria-label="sort" class="{indicatorClass}" tabindex="-1"></span>' +
         '</div>',
 
+    /**
+     * Construction logic executed during DataTableSortable instantiation.
+     * Lifecycle.
+     *
+     * @method initializer
+     * @protected
+     */
     initializer: function() {
         var instance = this;
 
@@ -59,6 +78,12 @@ DataTableSortable.prototype = {
         instance.after('sort', instance._updateCaption, instance);
     },
 
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @method _addCaption
+     * @protected
+     */
     _addCaption: function() {
         var instance = this;
 
@@ -78,21 +103,39 @@ DataTableSortable.prototype = {
         instance._captionNode = caption;
     },
 
-    _getSortyByName: function() {
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @method _getSortByName
+     * @protected
+     */
+    _getSortByName: function() {
         var instance = this;
 
         return A.Object.keys(instance.get('sortBy')[0]);
     },
 
-    _getSortyByOrder: function() {
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @method _getSortByOrder
+     * @protected
+     */
+    _getSortByOrder: function() {
         var instance = this;
 
         return A.Object.values(instance.get('sortBy')[0]);
     },
 
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @method _updateCaption
+     * @protected
+     */
     _updateCaption: function() {
         var instance = this,
-            ascending = (instance._getSortyByOrder() > 0),
+            ascending = (instance._getSortByOrder() > 0),
             caption = instance._captionNode,
             strings = instance.get('strings');
 
@@ -100,7 +143,7 @@ DataTableSortable.prototype = {
             A.Lang.sub(
                 instance.get('strings').sortedBy + ' {columnName} {sorted}',
                 {
-                    columnName: instance._getSortyByName(),
+                    columnName: instance._getSortByName(),
                     sorted: ascending ? strings.asc : strings.desc
                 }
             )

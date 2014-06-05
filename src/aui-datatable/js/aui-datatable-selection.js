@@ -418,8 +418,15 @@ A.mix(DataTableSelection.prototype, {
         return coords;
     },
 
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @method _selectCell
+     * @param event
+     * @param cell
+     * @protected
+     */
     _selectCell: function(event, cell) {
-        console.log('cell: ', cell);
         var instance = this;
 
         var coords = instance.getCoord(cell);
@@ -430,13 +437,18 @@ A.mix(DataTableSelection.prototype, {
         instance.set('activeCoord', coords);
     },
 
+    /**
+     * TODO. Wanna help? Please send a Pull Request.
+     *
+     * @method _setFirstCellTabbable
+     * @protected
+     */
     _setFirstCellTabbable: function() {
         var instance = this,
             classNames = instance.CLASS_NAMES_SELECTION,
             firstCell = instance._tableNode.one('.' + classNames.cell);
 
         firstCell.setAttribute('tabindex', 0);
-        console.log('firstCell: ', firstCell);
 
         firstCell.once('focus', A.rbind(instance._selectCell, instance, firstCell));
     },
