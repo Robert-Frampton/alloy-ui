@@ -11,7 +11,9 @@ YUI.add('aui-toggler-delegate-tests', function(Y) {
         defaultMarkup = togglerContainer.getHTML(),
 
         _SELECTOR_CSS_CONTENT = '.content',
-        _SELECTOR_CSS_HEADER = '.header';
+        _SELECTOR_CSS_HEADER = '.header',
+
+        IE = Y.UA.ie;
 
     //--------------------------------------------------------------------------
     // Test Case for TogglerDelegate.destructor
@@ -211,7 +213,8 @@ YUI.add('aui-toggler-delegate-tests', function(Y) {
                 closeAllOnExpand: true,
                 content: _SELECTOR_CSS_CONTENT,
                 expanded: false,
-                header: _SELECTOR_CSS_HEADER
+                header: _SELECTOR_CSS_HEADER,
+                toggleEvent: 'click'
             });
         },
 
@@ -265,8 +268,92 @@ YUI.add('aui-toggler-delegate-tests', function(Y) {
 
     }));
 
+    //--------------------------------------------------------------------------
+    // Test Case for TogglerDelegate:toggleEvent
+    //--------------------------------------------------------------------------
+
+    suite.add(new Y.Test.Case({
+
+        name: 'TogglerDelegate:toggleEvent',
+
+        setUp: function() {
+            var test = this;
+
+            if (togglerDelegate) {
+                togglerDelegate.destroy();
+            }
+
+            togglerContainer.setHTML();
+
+            // Using mousedown for IE due to issues with simulating tap
+            var eventType = IE ? 'mousedown' : 'tap';
+
+            togglerDelegate = new Y.TogglerDelegate({
+                closeAllOnExpand: true,
+                container: '#togglerEventContainer',
+                content: _SELECTOR_CSS_CONTENT,
+                expanded: false,
+                header: _SELECTOR_CSS_HEADER,
+                toggleEvent: eventType
+            });
+
+            test._currentIndex = 0;
+        },
+
+        tearDown: function() {
+            togglerDelegate.destroy();
+
+            togglerDelegate = null;
+        },
+
+        _assertToggle: function(headers) {
+            var test = this,
+                currentIndex = test._currentIndex,
+                header = headers.item(currentIndex);
+
+            if (IE) {
+                header.simulate('mousedown');
+            }
+            else {
+                header.simulateGesture('tap');
+            }
+
+            test.wait(
+                function() {
+                    Y.Assert.isTrue(header.next('.toggler-content').hasClass('toggler-content-expanded'));
+
+                    currentIndex = currentIndex + 1;
+
+                    if (headers.item(currentIndex)) {
+                        test._currentIndex = currentIndex;
+
+                        test._assertToggle(headers);
+                    }
+                },
+                100
+            );
+        },
+
+        //----------------------------------------------------------------------
+        // Tests
+        //----------------------------------------------------------------------
+
+        /*
+         * Checks to see if Toggler succesfully expands when passing custom
+         * event into toggleEvent attribute.
+         *
+         * Tests: AUI-#
+         */
+        'test custom toggleEvent': function() {
+            var test = this;
+
+            test._assertToggle(Y.all('.toggler-header'));
+        }
+
+    }));
+
     Y.Test.Runner.add(suite);
 
 }, '', {
-    requires: ['aui-toggler-delegate', 'node-event-simulate', 'test']
+    requires: ['aui-toggler-delegate', 'event-tap', 'node-event-simulate', 'test']
 });
