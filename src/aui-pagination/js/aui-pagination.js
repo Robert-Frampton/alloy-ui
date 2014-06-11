@@ -14,7 +14,10 @@ var Lang = A.Lang,
 
     CSS_ACTIVE = getCN('active'),
     CSS_DISABLED = getCN('disabled'),
-    CSS_PAGINATION_CONTROL = getCN('pagination', 'control');
+    CSS_PAGINATION_CONTROL = getCN('pagination', 'control'),
+
+    KEY_ARROW_LEFT = 37,
+    KEY_ARROW_RIGHT = 39;
 
 /**
  * A base class for Pagination, providing:
@@ -65,6 +68,32 @@ var Pagination = A.Component.create({
         circular: {
             validator: isBoolean,
             value: true
+        },
+
+        /**
+         * Defines the keyboard configuration object for
+         * `Plugin.NodeFocusManager`.
+         *
+         * @attribute focusmanager
+         * @default {
+         *     descendants: 'li > a',
+         *     keys: {
+         *         next: 'down:39',
+         *         previous: 'down:37'
+         *     }
+         * }
+         * @type {Object}
+         */
+        focusmanager: {
+            value: {
+                descendants: 'li > a',
+                focusClass: 'focus',
+                keys: {
+                    next: 'down:' + KEY_ARROW_RIGHT,
+                    previous: 'down:' + KEY_ARROW_LEFT
+                }
+            },
+            writeOnce: 'initOnly'
         },
 
         /**
@@ -228,6 +257,8 @@ var Pagination = A.Component.create({
                 defaultFn: instance._defChangeRequest
             });
             boundingBox.delegate('click', instance._onClickItem, 'li', instance);
+
+            instance._bindFocusManager();
         },
 
         /**
@@ -360,6 +391,23 @@ var Pagination = A.Component.create({
             instance.set('page', page);
 
             instance.lastState = state;
+        },
+
+        /**
+         * Binds the `Plugin.NodeFocusManager` that handle keyboard
+         * navigation.
+         *
+         * @method _bindFocusManager
+         * @protected
+         */
+        _bindFocusManager: function() {
+            var instance = this,
+                boundingBox = instance.get('boundingBox'),
+                focusmanager = instance.get('focusmanager');
+
+            focusmanager.circular = instance.get('circular');
+
+            boundingBox.plug(A.Plugin.NodeFocusManager, focusmanager);
         },
 
         /**
