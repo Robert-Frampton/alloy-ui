@@ -56,6 +56,17 @@ var Pagination = A.Component.create({
     ATTRS: {
 
         /**
+        * `aria-label` for the Pagination.
+        *
+        * @attribute ariaLabel
+        * @type String
+        */
+        ariaLabel: {
+            value: 'Navigate pages with arrow keys. Select a page with enter key.',
+            validator: Lang.isString
+        },
+
+        /**
          * When enabled this property allows the navigation to go back to the
          * beggining when it reaches the last page, the opposite behavior is
          * also true. Incremental page navigation could happen clicking the
@@ -219,7 +230,7 @@ var Pagination = A.Component.create({
 
     prototype: {
         CONTENT_TEMPLATE: '<ul class="pagination"></ul>',
-        ITEM_TEMPLATE: '<li class="{cssClass}"><a href="#">{content}</a></li>',
+        ITEM_TEMPLATE: '<li class="{cssClass}"><a aria-label="{label}" href="#">{content}</a></li>',
         TOTAL_CONTROLS: 2,
 
         items: null,
@@ -271,6 +282,8 @@ var Pagination = A.Component.create({
             var instance = this;
 
             instance._renderItemsUI(instance.get('total'));
+
+            instance._setAriaElements();
         },
 
         /**
@@ -467,7 +480,8 @@ var Pagination = A.Component.create({
                 return Lang.sub(
                     instance.ITEM_TEMPLATE, {
                         content: index,
-                        cssClass: ''
+                        cssClass: '',
+                        label: 'Page ' + index
                     }
                 );
             };
@@ -540,6 +554,7 @@ var Pagination = A.Component.create({
                 var item = instance.getItem(event.prevVal);
                 if (item) {
                     item.removeClass(CSS_ACTIVE);
+                    item.get('childNodes').item(0).removeAttribute('aria-selected');
                 }
             }
         },
@@ -561,7 +576,8 @@ var Pagination = A.Component.create({
 
             buffer += Lang.sub(tpl, {
                 content: instance.getString('prev'),
-                cssClass: CSS_PAGINATION_CONTROL
+                cssClass: CSS_PAGINATION_CONTROL,
+                label: 'Go to previous page'
             });
 
             for (i = offset; i <= (offset + total - 1); i++) {
@@ -570,7 +586,8 @@ var Pagination = A.Component.create({
 
             buffer += Lang.sub(tpl, {
                 content: instance.getString('next'),
-                cssClass: CSS_PAGINATION_CONTROL
+                cssClass: CSS_PAGINATION_CONTROL,
+                label: 'Go to next page'
             });
 
             var items = A.NodeList.create(buffer);
@@ -585,6 +602,21 @@ var Pagination = A.Component.create({
                 items.first().remove();
                 items.last().remove();
             }
+        },
+
+        /**
+         * Sets the aria-label for Pagination.
+         *
+         * @method _setAriaElements
+         * @protected
+         */
+        _setAriaElements: function() {
+            var instance = this,
+                contentBox = instance.get('contentBox');
+
+            contentBox.set('aria-label', instance.get('ariaLabel'));
+            contentBox.set('role', 'navigation')
+            contentBox.set('tabIndex', 0);
         },
 
         /**
@@ -651,6 +683,7 @@ var Pagination = A.Component.create({
 
             if (item) {
                 item.addClass(CSS_ACTIVE);
+                item.get('childNodes').item(0).set('aria-selected', true);
             }
         },
 
