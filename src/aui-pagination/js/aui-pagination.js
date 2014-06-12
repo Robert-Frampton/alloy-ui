@@ -270,6 +270,11 @@ var Pagination = A.Component.create({
             boundingBox.delegate('click', instance._onClickItem, 'li', instance);
 
             instance._bindFocusManager();
+
+            var keys = [KEY_ARROW_LEFT, KEY_ARROW_RIGHT],
+                keyEventSpec = 'down: ' + keys.join(', ');
+
+            boundingBox.on('key',instance._setFocus, keyEventSpec, instance);
         },
 
         /**
@@ -617,6 +622,27 @@ var Pagination = A.Component.create({
             contentBox.set('aria-label', instance.get('ariaLabel'));
             contentBox.set('role', 'navigation')
             contentBox.set('tabIndex', 0);
+        },
+
+        /**
+         * Set focus to active page.
+         *
+         * @method _setFocus
+         * @protected
+         */
+        _setFocus: function() {
+            var instance = this,
+                boundingBox = instance.get('boundingBox');
+
+            if (!boundingBox.focusManager.get('focused')) {
+                var page = instance.get('page');
+
+                if (!instance.get('showControls')) {
+                    page = page == 0 ? page : page - 1;
+                }
+
+                boundingBox.focusManager.focus(page);
+            }
         },
 
         /**
