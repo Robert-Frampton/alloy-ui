@@ -275,6 +275,8 @@ var Pagination = A.Component.create({
                 keyEventSpec = 'down: ' + keys.join(', ');
 
             boundingBox.on('key',instance._setFocus, keyEventSpec, instance);
+
+            instance.after('focusedChange', instance._afterFocusedChange, instance);
         },
 
         /**
@@ -412,6 +414,23 @@ var Pagination = A.Component.create({
         },
 
         /**
+         * Sets the descendant anchor elements to unfocusable after the pagination
+         * has lost focus.
+         *
+         * @method _afterFocusedChange
+         * @param {EventFacade} event
+         * @protected
+         */
+        _afterFocusedChange: function(event) {
+            var instance = this,
+                boundingBox = instance.get('boundingBox');
+
+            if (!event.newVal) {
+                boundingBox.focusManager.set('activeDescendant', -1);
+            }
+        },
+
+        /**
          * Binds the `Plugin.NodeFocusManager` that handle keyboard
          * navigation.
          *
@@ -426,6 +445,8 @@ var Pagination = A.Component.create({
             focusmanager.circular = instance.get('circular');
 
             boundingBox.plug(A.Plugin.NodeFocusManager, focusmanager);
+
+            boundingBox.focusManager.set('activeDescendant', -1);
         },
 
         /**
