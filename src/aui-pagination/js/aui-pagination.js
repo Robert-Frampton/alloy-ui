@@ -695,8 +695,8 @@ var Pagination = A.Component.create({
             first.toggleClass(CSS_DISABLED, pageFirst);
             last.toggleClass(CSS_DISABLED, pageLast);
 
-            first.setAttribute('aria-disabled', pageFirst);
-            last.setAttribute('aria-disabled', pageLast);
+            first.get('childNodes').item(0).set('aria-disabled', pageFirst);
+            last.get('childNodes').item(0).set('aria-disabled', pageLast);
         },
 
         /**
