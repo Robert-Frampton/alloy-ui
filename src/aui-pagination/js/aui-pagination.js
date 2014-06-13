@@ -62,8 +62,8 @@ var Pagination = A.Component.create({
         * @type String
         */
         ariaLabel: {
-            value: 'Navigate pages with arrow keys. Select a page with enter key.',
-            validator: Lang.isString
+            validator: Lang.isString,
+            value: 'Navigate pages with arrow keys. Select a page with enter key.'
         },
 
         /**
@@ -642,7 +642,7 @@ var Pagination = A.Component.create({
                 contentBox = instance.get('contentBox');
 
             contentBox.set('aria-label', instance.get('ariaLabel'));
-            contentBox.set('role', 'navigation')
+            contentBox.set('role', 'navigation');
             contentBox.set('tabIndex', 0);
         },
 
@@ -660,7 +660,7 @@ var Pagination = A.Component.create({
                 var page = instance.get('page');
 
                 if (!instance.get('showControls')) {
-                    page = page == 0 ? page : page - 1;
+                    page = page === 0 ? page : page - 1;
                 }
 
                 boundingBox.focusManager.focus(page);
