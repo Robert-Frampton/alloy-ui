@@ -686,13 +686,17 @@ var Pagination = A.Component.create({
          */
         _syncNavigationUI: function() {
             var instance = this,
-                items = instance.get('items');
+                items = instance.get('items'),
+                first = items.first(),
+                last = items.last(),
+                pageFirst = instance.get('page') === 1,
+                pageLast = instance.get('page') === instance.get('total');
 
-            items.first().toggleClass(
-                CSS_DISABLED, instance.get('page') === 1);
+            first.toggleClass(CSS_DISABLED, pageFirst);
+            last.toggleClass(CSS_DISABLED, pageLast);
 
-            items.last().toggleClass(
-                CSS_DISABLED, instance.get('page') === instance.get('total'));
+            first.setAttribute('aria-disabled', pageFirst);
+            last.setAttribute('aria-disabled', pageLast);
         },
 
         /**
