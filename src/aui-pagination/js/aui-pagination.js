@@ -422,10 +422,11 @@ var Pagination = A.Component.create({
          * @protected
          */
         _afterFocusedChange: function(event) {
-            var instance = this,
-                boundingBox = instance.get('boundingBox');
+            var instance = this;
 
             if (!event.newVal) {
+                var boundingBox = instance.get('boundingBox');
+
                 boundingBox.focusManager.set('activeDescendant', -1);
             }
         },
