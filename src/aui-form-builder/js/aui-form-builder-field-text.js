@@ -7,6 +7,8 @@
 
 var L = A.Lang,
 
+    AEscape = A.Escape,
+
     getCN = A.getClassName,
 
     CSS_FORM_CONTROL = getCN('form', 'control'),
@@ -15,14 +17,14 @@ var L = A.Lang,
     CSS_FORM_BUILDER_FIELD = getCN('form-builder-field'),
     CSS_FORM_BUILDER_FIELD_NODE = getCN('form-builder-field', 'node'),
 
-    TPL_INPUT = '<div class="row form-builder-field-wrapper"><input id="{id}" class="' + [CSS_FORM_BUILDER_FIELD_NODE,
+    TPL_INPUT = '<div class="form-builder-field-wrapper"><input id="{id}" class="' + [CSS_FORM_BUILDER_FIELD_NODE,
         CSS_FIELD_INPUT, CSS_FIELD_INPUT_TEXT,
         CSS_FORM_CONTROL].join(' ') + '" name="{name}" type="text" value="{value}" /></div>',
 
     WIDTH_VALUES_MAP = {
-        small: 'col col-xs-5 col-sm-3 col-md-3',
-        medium: 'col col-xs-6 col-sm-5 col-md-5',
-        large: 'col col-xs-12 col-sm-7 col-md-7'
+        small: 'col-xs-4',
+        medium: 'col-xs-8',
+        large: 'col-xs-12'
     };
 
 /**
@@ -109,11 +111,11 @@ var FormBuilderTextField = A.Component.create({
 
             return L.sub(
                 instance.get('template'), {
-                    id: A.Escape.html(instance.get('id')),
-                    label: A.Escape.html(instance.get('label')),
-                    name: A.Escape.html(instance.get('name')),
-                    value: A.Escape.html(instance.get('predefinedValue')),
-                    width: A.Escape.html(instance.get('width'))
+                    id: AEscape.html(instance.get('id')),
+                    label: AEscape.html(instance.get('label')),
+                    name: AEscape.html(instance.get('name')),
+                    value: AEscape.html(instance.get('predefinedValue')),
+                    width: AEscape.html(instance.get('width'))
                 }
             );
         },
@@ -171,4 +173,4 @@ var FormBuilderTextField = A.Component.create({
 
 A.FormBuilderTextField = FormBuilderTextField;
 
-A.FormBuilder.types.text = A.FormBuilderTextField;
+A.namespace('FormBuilder.types').text = A.FormBuilderTextField;

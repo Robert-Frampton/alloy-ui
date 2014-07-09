@@ -16,7 +16,7 @@ var AArray = A.Array,
     CSS_FORM_BUILDER_FIELD = getCN('form-builder-field'),
     CSS_FORM_BUILDER_FIELD_NODE = getCN('form-builder-field', 'node'),
 
-    TPL_TEXTAREA = '<div class="row form-builder-field-wrapper"><textarea id="{id}" class="' + [
+    TPL_TEXTAREA = '<div class="form-builder-field-wrapper"><textarea id="{id}" class="' + [
         CSS_FORM_BUILDER_FIELD_NODE, CSS_FIELD, CSS_FIELD_TEXT,
         CSS_FIELD_TEXTAREA, CSS_FORM_CONTROL].join(' ') + '" name="{name}">{value}</textarea></div>';
 
@@ -112,4 +112,4 @@ var FormBuilderTextAreaField = A.Component.create({
 
 A.FormBuilderTextAreaField = FormBuilderTextAreaField;
 
-A.FormBuilder.types.textarea = A.FormBuilderTextAreaField;
+A.namespace('FormBuilder.types').textarea = A.FormBuilderTextAreaField;
