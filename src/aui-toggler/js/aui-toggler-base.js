@@ -7,7 +7,6 @@
 var Lang = A.Lang,
     isBoolean = Lang.isBoolean,
     isObject = Lang.isObject,
-    isString = Lang.isString,
     isUndefined = Lang.isUndefined,
 
     toInt = Lang.toInt,
@@ -125,6 +124,19 @@ var Toggler = A.Component.create({
          * @type Boolean
          */
         expanded: {
+            setter: function(val) {
+                var instance = this,
+                    content = instance.get('content'),
+                    header = instance.get('header');
+
+                if (!content.getAttribute('aria-hidden')) {
+                    content.setAttribute('aria-hidden', !val);
+                }
+
+                if (!header.getAttribute('aria-expanded')) {
+                    header.setAttribute('aria-expanded', val);
+                }
+            },
             validator: isBoolean,
             value: true
         },
@@ -185,18 +197,12 @@ var Toggler = A.Component.create({
      */
     headerEventHandler: function(event, instance) {
         if (event.type === instance.get('toggleEvent') || event.isKey('enter') || event.isKey('space')) {
-            event.preventDefault();
-
             return instance.toggle();
         }
         else if (event.isKey('down') || event.isKey('right') || event.isKey('num_plus')) {
-            event.preventDefault();
-
             return instance.expand();
         }
         else if (event.isKey('up') || event.isKey('left') || event.isKey('esc') || event.isKey('num_minus')) {
-            event.preventDefault();
-
             return instance.collapse();
         }
     },
@@ -214,6 +220,8 @@ var Toggler = A.Component.create({
 
             instance.bindUI();
             instance.syncUI();
+
+            instance._setAriaElements();
 
             instance._uiSetExpanded(instance.get('expanded'));
         },
@@ -293,9 +301,13 @@ var Toggler = A.Component.create({
          * @method collapse
          */
         collapse: function(payload) {
-            var instance = this;
+            var instance = this,
+                expand = false;
 
-            return instance.toggle(false, payload);
+            instance.get('content').setAttribute('aria-hidden', !expand);
+            instance.get('header').setAttribute('aria-expanded', expand);
+
+            return instance.toggle(expand, payload);
         },
 
         /**
@@ -304,9 +316,13 @@ var Toggler = A.Component.create({
          * @method expand
          */
         expand: function(payload) {
-            var instance = this;
+            var instance = this,
+                expand = true;
 
-            return instance.toggle(true, payload);
+            instance.get('content').setAttribute('aria-hidden', !expand);
+            instance.get('header').setAttribute('aria-expanded', expand);
+
+            return instance.toggle(expand, payload);
         },
 
         /**
@@ -404,6 +420,9 @@ var Toggler = A.Component.create({
                 instance.set('expanded', expand, payload);
             }
 
+            instance.get('content').setAttribute('aria-hidden', !expand);
+            instance.get('header').setAttribute('aria-expanded', expand);
+
             return expand;
         },
 
@@ -421,6 +440,21 @@ var Toggler = A.Component.create({
         },
 
         /**
+         * Set the 'aria' attributes on the header and content nodes.
+         *
+         * @method _setAriaLabelElements
+         * @param expand
+         */
+        _setAriaElements: function() {
+            var instance = this,
+                content = instance.get('content'),
+                header = instance.get('header'),
+                id = content.attr('id') || content.guid();
+
+            header.setAttribute('aria-controls', id);
+        },
+
+        /**
          * Set the `expanded` attribute on the UI.
          *
          * @method _uiSetExpanded
@@ -428,12 +462,13 @@ var Toggler = A.Component.create({
          * @protected
          */
         _uiSetExpanded: function(val) {
-            var instance = this;
+            var instance = this,
+                content = instance.get('content'),
+                header = instance.get('header');
 
-            instance.get('content').replaceClass(CSS_TOGGLER_CONTENT_STATE[!val], CSS_TOGGLER_CONTENT_STATE[val]);
-            instance.get('header').replaceClass(CSS_TOGGLER_HEADER_STATE[!val], CSS_TOGGLER_HEADER_STATE[val]);
+            content.replaceClass(CSS_TOGGLER_CONTENT_STATE[!val], CSS_TOGGLER_CONTENT_STATE[val]);
+            header.replaceClass(CSS_TOGGLER_HEADER_STATE[!val], CSS_TOGGLER_HEADER_STATE[val]);
         }
-
     }
 });
 
