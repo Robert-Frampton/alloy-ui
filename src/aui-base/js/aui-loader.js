@@ -280,6 +280,8 @@ Y.mix(YUI.Env[Y.version].modules, {
     "aui-datatable-core": {
         "requires": [
             "aui-datatable-body",
+            "aui-datatable-head",
+            "aui-datatable-sort",
             "datatable-base",
             "event-key",
             "aui-event-base"
@@ -317,6 +319,11 @@ Y.mix(YUI.Env[Y.version].modules, {
             "aui-datatable-text-area-cell-editor"
         ]
     },
+    "aui-datatable-head": {
+        "requires": [
+            "datatable-head"
+        ]
+    },
     "aui-datatable-highlight": {
         "requires": [
             "aui-datatable-selection"
@@ -346,6 +353,11 @@ Y.mix(YUI.Env[Y.version].modules, {
             "aui-datatable-core"
         ],
         "skinnable": true
+    },
+    "aui-datatable-sort": {
+        "requires": [
+            "datatable-sort"
+        ]
     },
     "aui-datatable-text-area-cell-editor": {
         "requires": [
