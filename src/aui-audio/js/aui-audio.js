@@ -52,6 +52,17 @@ var AudioImpl = A.Component.create({
     ATTRS: {
 
         /**
+         * Sets the `aria-label` for Audio.
+         *
+         * @attribute ariaLabel
+         * @type String
+         */
+        ariaLabel: {
+            value: 'Toggle play/pause with spacebar. Rewind with left arrow. Fast forward with right arrow. Increase volume with up arrow. Decrease volume with down arrow.',
+            validator: Lang.isString
+        },
+
+        /**
          * URL used by Audio to play.
          *
          * @attribute url
@@ -197,6 +208,8 @@ var AudioImpl = A.Component.create({
             instance._renderSwfTask = A.debounce(instance._renderSwf, 1, instance);
 
             instance._renderAudio(!instance.get('oggUrl'));
+
+            instance._setAriaElements();
         },
 
         /**
@@ -400,6 +413,17 @@ var AudioImpl = A.Component.create({
             instance._audio = audio;
 
             return audio;
+        },
+
+        _setAriaElements: function() {
+            var instance = this;
+
+            var audio = instance._audio,
+                boundingBox = instance.get('boundingBox');
+
+            audio.setAttribute('aria-label', instance.get('ariaLabel'));
+
+            boundingBox.setAttribute('role', 'application');
         },
 
         /**
