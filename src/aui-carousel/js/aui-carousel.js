@@ -87,6 +87,8 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
      */
     syncUI: function() {
         this._syncNodeMenuPositionUI();
+
+        this._setAriaElements();
     },
 
     /**
@@ -98,6 +100,10 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
     destructor: function() {
         if (this._menuClickDelegateHandler) {
             this._menuClickDelegateHandler.detach();
+        }
+
+        if (this._keyHandler) {
+            this._keyHandler.detach()
         }
     },
 
@@ -186,6 +192,18 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
             this.get('nodeMenuItemSelector'),
             this
         );
+
+        this._bindKeypress();
+    },
+
+    /**
+     * Binds the keydown event related to the carousel's controls.
+     *
+     * @method _bindKeypress
+     * @protected
+     */
+    _bindKeypress: function() {
+        this._keyHandler = this.get('boundingBox').on('keydown', A.bind(this._handleKeypressEvent, this));
     },
 
     /**
@@ -269,6 +287,34 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
                 previousImage.removeClass(CSS_ITEM_TRANSITION);
                 currentImage.removeClass(CSS_ITEM_ACTIVE_TRANSITION);
             });
+        }
+    },
+
+    /**
+     * Fired on keydown event on carousel.
+     *
+     * @method _handleKeypressEvent
+     * @param event
+     * @protected
+     */
+    _handleKeypressEvent: function(event) {
+        if (event.target.hasClass('carousel-focused')) {
+            var keyCode = event.keyCode;
+
+            if (keyCode === 37) {
+                this.prev();
+            }
+            else if (keyCode === 39) {
+                this.next();
+            }
+            else if (keyCode === 32) {
+                if (this.get('playing')) {
+                    this.pause();
+                }
+                else {
+                    this.play();
+                }
+            }
         }
     },
 
@@ -418,6 +464,19 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
         this._player = this.get('nodeMenu').one('.' + CSS_MENU_PLAY);
     },
 
+     /**
+     * Set the Aria Elements of the carousel.
+     *
+     * @method _setAriaElements
+     * @protexted
+     */
+    _setAriaElements: function() {
+        var boundingBox = this.get('boundingBox');
+
+        boundingBox.setAttribute('aria-label', this.get('ariaLabel'));
+        boundingBox.setAttribute('role', 'presentation');
+    },
+
     /**
      * Set the `nodeMenu` attribute.
      *
@@ -513,6 +572,19 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
      * @static
      */
     ATTRS: {
+
+         /**
+          * Sets the `aria-label` for the carousel.
+          *
+          * @attribute ariaLabel
+          * @type String
+          */
+         ariaLabel: {
+             value: 'Toggle play and pause with spacebar.  Navigate left and right with arrow keys',
+             validator: Lang.isString
+         },
+
+
         /**
          * If the carousel will be circular or not.
          *
@@ -601,6 +673,17 @@ A.Carousel = A.Base.create('carousel', A.ImageViewerBase, [A.ImageViewerSlidesho
         pauseOnHover: {
             value: false,
             validator: Lang.isBoolean
+        },
+
+        /**
+         * Specify the tab order of elements.
+         *
+         * @attribute tabIndex
+         * @default 1
+         * @type Number
+         */
+        tabIndex: {
+            value: 1
         }
     },
 
