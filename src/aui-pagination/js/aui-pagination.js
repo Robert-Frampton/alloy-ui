@@ -14,7 +14,10 @@ var Lang = A.Lang,
 
     CSS_ACTIVE = getCN('active'),
     CSS_DISABLED = getCN('disabled'),
-    CSS_PAGINATION_CONTROL = getCN('pagination', 'control');
+    CSS_PAGINATION_CONTROL = getCN('pagination', 'control'),
+
+    KEY_ARROW_LEFT = 37,
+    KEY_ARROW_RIGHT = 39;
 
 /**
  * A base class for Pagination, providing:
@@ -53,6 +56,17 @@ var Pagination = A.Component.create({
     ATTRS: {
 
         /**
+        * `aria-label` for the Pagination.
+        *
+        * @attribute ariaLabel
+        * @type String
+        */
+        ariaLabel: {
+            validator: Lang.isString,
+            value: 'Navigate pages with arrow keys. Select a page with enter key.'
+        },
+
+        /**
          * When enabled this property allows the navigation to go back to the
          * beggining when it reaches the last page, the opposite behavior is
          * also true. Incremental page navigation could happen clicking the
@@ -65,6 +79,32 @@ var Pagination = A.Component.create({
         circular: {
             validator: isBoolean,
             value: true
+        },
+
+        /**
+         * Defines the keyboard configuration object for
+         * `Plugin.NodeFocusManager`.
+         *
+         * @attribute focusmanager
+         * @default {
+         *     descendants: 'li > a',
+         *     keys: {
+         *         next: 'down:39',
+         *         previous: 'down:37'
+         *     }
+         * }
+         * @type {Object}
+         */
+        focusmanager: {
+            value: {
+                descendants: 'li > a',
+                focusClass: 'focus',
+                keys: {
+                    next: 'down:' + KEY_ARROW_RIGHT,
+                    previous: 'down:' + KEY_ARROW_LEFT
+                }
+            },
+            writeOnce: 'initOnly'
         },
 
         /**
@@ -190,7 +230,7 @@ var Pagination = A.Component.create({
 
     prototype: {
         CONTENT_TEMPLATE: '<ul class="pagination"></ul>',
-        ITEM_TEMPLATE: '<li class="{cssClass}"><a href="#">{content}</a></li>',
+        ITEM_TEMPLATE: '<li class="{cssClass}"><a aria-label="{label}" href="#">{content}</a></li>',
         TOTAL_CONTROLS: 2,
 
         items: null,
@@ -228,6 +268,15 @@ var Pagination = A.Component.create({
                 defaultFn: instance._defChangeRequest
             });
             boundingBox.delegate('click', instance._onClickItem, 'li', instance);
+
+            instance._bindFocusManager();
+
+            var keys = [KEY_ARROW_LEFT, KEY_ARROW_RIGHT],
+                keyEventSpec = 'down: ' + keys.join(', ');
+
+            boundingBox.on('key',instance._setFocus, keyEventSpec, instance);
+
+            instance.after('focusedChange', instance._afterFocusedChange, instance);
         },
 
         /**
@@ -240,6 +289,8 @@ var Pagination = A.Component.create({
             var instance = this;
 
             instance._renderItemsUI(instance.get('total'));
+
+            instance._setAriaElements();
         },
 
         /**
@@ -363,6 +414,43 @@ var Pagination = A.Component.create({
         },
 
         /**
+         * Sets the descendant anchor elements to unfocusable after the pagination
+         * has lost focus.
+         *
+         * @method _afterFocusedChange
+         * @param {EventFacade} event
+         * @protected
+         */
+        _afterFocusedChange: function(event) {
+            var instance = this;
+
+            if (!event.newVal) {
+                var boundingBox = instance.get('boundingBox');
+
+                boundingBox.focusManager.set('activeDescendant', -1);
+            }
+        },
+
+        /**
+         * Binds the `Plugin.NodeFocusManager` that handle keyboard
+         * navigation.
+         *
+         * @method _bindFocusManager
+         * @protected
+         */
+        _bindFocusManager: function() {
+            var instance = this,
+                boundingBox = instance.get('boundingBox'),
+                focusmanager = instance.get('focusmanager');
+
+            focusmanager.circular = instance.get('circular');
+
+            boundingBox.plug(A.Plugin.NodeFocusManager, focusmanager);
+
+            boundingBox.focusManager.set('activeDescendant', -1);
+        },
+
+        /**
          * Returns number of items in doc.
          *
          * @method _countItemsInDoc
@@ -419,7 +507,8 @@ var Pagination = A.Component.create({
                 return Lang.sub(
                     instance.ITEM_TEMPLATE, {
                         content: index,
-                        cssClass: ''
+                        cssClass: '',
+                        label: 'Page ' + index
                     }
                 );
             };
@@ -492,6 +581,7 @@ var Pagination = A.Component.create({
                 var item = instance.getItem(event.prevVal);
                 if (item) {
                     item.removeClass(CSS_ACTIVE);
+                    item.get('childNodes').item(0).removeAttribute('aria-selected');
                 }
             }
         },
@@ -513,7 +603,8 @@ var Pagination = A.Component.create({
 
             buffer += Lang.sub(tpl, {
                 content: instance.getString('prev'),
-                cssClass: CSS_PAGINATION_CONTROL
+                cssClass: CSS_PAGINATION_CONTROL,
+                label: 'Go to previous page'
             });
 
             for (i = offset; i <= (offset + total - 1); i++) {
@@ -522,7 +613,8 @@ var Pagination = A.Component.create({
 
             buffer += Lang.sub(tpl, {
                 content: instance.getString('next'),
-                cssClass: CSS_PAGINATION_CONTROL
+                cssClass: CSS_PAGINATION_CONTROL,
+                label: 'Go to next page'
             });
 
             var items = A.NodeList.create(buffer);
@@ -536,6 +628,42 @@ var Pagination = A.Component.create({
             if (!instance.get('showControls')) {
                 items.first().remove();
                 items.last().remove();
+            }
+        },
+
+        /**
+         * Sets the aria-label for Pagination.
+         *
+         * @method _setAriaElements
+         * @protected
+         */
+        _setAriaElements: function() {
+            var instance = this,
+                contentBox = instance.get('contentBox');
+
+            contentBox.set('aria-label', instance.get('ariaLabel'));
+            contentBox.set('role', 'navigation');
+            contentBox.set('tabIndex', 0);
+        },
+
+        /**
+         * Set focus to active page.
+         *
+         * @method _setFocus
+         * @protected
+         */
+        _setFocus: function() {
+            var instance = this,
+                boundingBox = instance.get('boundingBox');
+
+            if (!boundingBox.focusManager.get('focused')) {
+                var page = instance.get('page');
+
+                if (!instance.get('showControls')) {
+                    page = page === 0 ? page : page - 1;
+                }
+
+                boundingBox.focusManager.focus(page);
             }
         },
 
@@ -558,13 +686,17 @@ var Pagination = A.Component.create({
          */
         _syncNavigationUI: function() {
             var instance = this,
-                items = instance.get('items');
+                items = instance.get('items'),
+                first = items.first(),
+                last = items.last(),
+                pageFirst = instance.get('page') === 1,
+                pageLast = instance.get('page') === instance.get('total');
 
-            items.first().toggleClass(
-                CSS_DISABLED, instance.get('page') === 1);
+            first.toggleClass(CSS_DISABLED, pageFirst);
+            last.toggleClass(CSS_DISABLED, pageLast);
 
-            items.last().toggleClass(
-                CSS_DISABLED, instance.get('page') === instance.get('total'));
+            first.get('childNodes').item(0).set('aria-disabled', pageFirst);
+            last.get('childNodes').item(0).set('aria-disabled', pageLast);
         },
 
         /**
@@ -603,6 +735,7 @@ var Pagination = A.Component.create({
 
             if (item) {
                 item.addClass(CSS_ACTIVE);
+                item.get('childNodes').item(0).set('aria-selected', true);
             }
         },
 

@@ -4,6 +4,7 @@
             "node-event-delegate",
             "aui-node",
             "aui-component",
+            "node-focusmanager",
             "widget-htmlparser"
         ],
         "skinnable": true
