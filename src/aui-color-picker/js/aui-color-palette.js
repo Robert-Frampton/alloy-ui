@@ -9,6 +9,8 @@ var AArray = A.Array,
     AColor = A.Color,
     Lang = A.Lang,
 
+    isString = Lang.isString,
+
     getClassName = A.getClassName,
 
     CSS_PALETTE_ITEM = getClassName('palette-item'),
@@ -33,31 +35,132 @@ var AArray = A.Array,
         ITEM_TEMPLATE: '<li class="' + CSS_PALETTE_ITEM +
             ' {selectedClassName}" data-column={column} data-index={index} data-row={row} data-value="{value}">' +
             '<a href="" class="' + CSS_PALETTE_ITEM_INNER +
-            '" style="background-color:{value}" onclick="return false;" title="{title}"></a>' + '</li>',
+            '" style="background-color:{value}" onclick="return false;" title="{title}" tabindex="{tabindex}"></a>' + '</li>',
 
         /**
-         * Provides a default value (Function) to the `formatter` property.
+         * Construction logic executed during ColorPalette instantiation. Lifecycle.
          *
-         * @method _valueFormatterFn
-         * @return {Function} The formatter function
+         * @method initializer
          * @protected
          */
-        _valueFormatterFn: function() {
-            return function(items, index, row, column, selected) {
-                var instance = this,
-                    item = items[index];
+        initializer: function() {
+            var instance = this;
 
-                return Lang.sub(
-                    instance.ITEM_TEMPLATE, {
-                        column: column,
-                        index: index,
-                        row: row,
-                        selectedClassName: selected ? CSS_PALETTE_ITEM_SELECTED : '',
-                        title: item.name,
-                        value: item.value
+            instance.get('boundingBox').delegate('keydown', instance._onKeyDown, '.' + CSS_PALETTE_ITEM, instance);
+
+            instance.after('render', instance._setAriaElements);
+        },
+
+        /**
+         * Toggle 'aria-pressed' attribute on palette item.
+         *
+         * @method toggleAriaPressed
+         * @param {Number} index
+         */
+        toggleAriaPressed: function(index) {
+            var instance = this,
+                item = instance.getItemByIndex(index),
+                pressed = item.hasClass(CSS_PALETTE_ITEM_SELECTED);
+
+            item.one('.' + CSS_PALETTE_ITEM_INNER).setAttribute('aria-pressed', pressed);
+        },
+
+        /**
+         * Handles key press event and navigates left/right or selectes item.
+         *
+         * @param {Event} event The fired event
+         * @method _onKeyDown
+         * @protected
+         */
+        _onKeyDown: function(event) {
+            var instance = this,
+                keyCode = event.keyCode,
+                target = event.currentTarget,
+                index = parseInt(target.getData('index'));
+
+            if (37 <= keyCode && keyCode <= 40) {
+                if (keyCode === 37) {
+                    index = index - 1;
+                }
+                else if (keyCode === 38) {
+                    index = index - 10;
+                }
+                else if (keyCode === 39) {
+                    index = index + 1;
+                }
+                else if (keyCode === 40) {
+                    index = index + 10;
+                }
+
+                var items = instance.get('boundingBox').all('.' + CSS_PALETTE_ITEM_INNER),
+                    item = instance.getItemByIndex(index);
+
+                if (item) {
+                    var toSelectItem = item.one('.' + CSS_PALETTE_ITEM_INNER);
+
+                    if (toSelectItem) {
+                        items.setAttribute('tabindex', -1);
+                        toSelectItem.setAttribute('tabindex', 0);
+                        toSelectItem.focus();
                     }
-                );
-            };
+                }
+            }
+            else if (keyCode === 13) {
+                instance._selectColorByIndex(index);
+            }
+        },
+
+        /**
+         * Select a color by index.
+         *
+         * @method _selectColorByIndex
+         * @param {Number} toSelectIndex
+         * @protected
+         */
+        _selectColorByIndex: function(toSelectIndex) {
+            var instance = this,
+                items = instance.get('items');
+
+            AArray.each(items, function(item, index) {
+                    if (index === toSelectIndex) {
+                        instance.toggleSelection(index);
+                    }
+                    else {
+                        instance.unselect(index);
+                    }
+
+                    instance.toggleAriaPressed(index);
+                }
+            );
+        },
+
+        /**
+         * Sets aria attributes on elements
+         *
+         * @method _setAriaElements
+         * @protected
+         */
+        _setAriaElements: function() {
+            var instance = this,
+                contentBox = instance.get('contentBox'),
+                contentBoxId = contentBox.getAttribute('id') || A.stamp(contentBox),
+                itemInners = contentBox.all('.' + CSS_PALETTE_ITEM_INNER),
+                selected = instance.get('selected'),
+                selectedItem = instance.getItemByIndex(selected);
+
+            if (!selectedItem) {
+                selectedItem = instance.getItemByIndex(0);
+            }
+
+            contentBox.setAttribute('aria-label', instance.get('ariaLabel'));
+
+            itemInners.setAttribute('role', 'button');
+            itemInners.setAttribute('aria-pressed', false);
+            selectedItem.one('.' + CSS_PALETTE_ITEM_INNER).setAttribute('aria-labelledby', contentBoxId);
+
+            if (selected >= 0) {
+                instance.toggleAriaPressed(selected);
+            }
         },
 
         /**
@@ -91,7 +194,34 @@ var AArray = A.Array,
             instance._items = null;
 
             return result;
+        },
+
+        /**
+         * Provides a default value (Function) to the `formatter` property.
+         *
+         * @method _valueFormatterFn
+         * @return {Function} The formatter function
+         * @protected
+         */
+        _valueFormatterFn: function() {
+            return function(items, index, row, column, selected) {
+                var instance = this,
+                    item = items[index];
+
+                return Lang.sub(
+                    instance.ITEM_TEMPLATE, {
+                        column: column,
+                        index: index,
+                        row: row,
+                        selectedClassName: selected ? CSS_PALETTE_ITEM_SELECTED : '',
+                        tabindex: index === 0 ? 0 : -1,
+                        title: item.name,
+                        value: item.value
+                    }
+                );
+            };
         }
+
     }, {
 
         /**
@@ -121,6 +251,16 @@ var AArray = A.Array,
          * @static
          */
         ATTRS: {
+            /**
+             * Sets the `aria-label` for the 'ColorPalette'.
+             *
+             * @attribute ariaLabel
+             * @type String
+             */
+            ariaLabel: {
+                validator: isString,
+                value: 'Select a color with enter key.  Change colors with arrow keys.'
+            },
 
             /**
              * Colors available to the `ColorPalette`.

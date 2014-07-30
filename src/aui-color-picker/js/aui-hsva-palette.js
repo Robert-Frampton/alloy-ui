@@ -446,6 +446,10 @@ var Lang = A.Lang,
                     value: MAX_ALPHA
                 }
             );
+
+            instance._setFieldValue(instance._aContainer, MAX_ALPHA);
+
+            instance._setAriaElement();
         },
 
         /**
@@ -460,6 +464,21 @@ var Lang = A.Lang,
             A.HSVAPalette.superclass._renderViewContainerContent.call(instance);
 
             instance._renderAlphaSliderContainer();
+        },
+
+        /**
+         * Set the 'aria-label' attributes on input nodes.
+         *
+         * @method _setAriaLabelElements
+         * @protected
+         */
+        _setAriaElement: function() {
+            var instance = this,
+                ariaLabels = instance.get('ariaLabels');
+
+            instance._setAriaAttr(ariaLabels.a, 'label', instance._aContainer);
+            instance._setAriaAttr(MAX_ALPHA, 'valuemax', instance._aContainer);
+            instance._setAriaAttr(MIN_ALPHA, 'valuemin', instance._aContainer);
         },
 
         /**

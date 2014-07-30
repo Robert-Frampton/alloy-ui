@@ -13,11 +13,13 @@ var AColor = A.Color,
 
     MAXLEN_HEX = 6,
 
+    MAX_COLOR = 255,
     MAX_HUE = 360,
     MAX_SATURATION = 100,
     MAX_VALUE = 100,
     MAX_OPACITY_PERC = 100,
 
+    MIN_COLOR = 0,
     MIN_HUE = 0,
     MIN_SATURATION = 0,
     MIN_VALUE = 0,
@@ -203,6 +205,8 @@ var AColor = A.Color,
             instance._hsContainerHeight = instance._hsContainer.get('offsetHeight');
 
             this._createSliders();
+
+            instance._setAriaElements();
         },
 
         /**
@@ -226,6 +230,8 @@ var AColor = A.Color,
                 type = fieldNode.getAttribute('data-type');
 
                 fieldNode.ancestor(SELECTOR_FORM_GROUP).removeClass('has-error');
+
+                instance._setAriaAttr(value, 'valuenow', fieldNode);
             }
             else {
                 fieldNode.ancestor(SELECTOR_FORM_GROUP).addClass('has-error');
@@ -1158,6 +1164,56 @@ var AColor = A.Color,
         },
 
         /**
+         * Set an 'aria-' attribute on an input node.
+         *
+         * @param {String} ariaVal
+         * @param {String} attr
+         * @param {Node} containerNode
+         */
+        _setAriaAttr: function(ariaVal, attr, containerNode) {
+            var inputNode = containerNode.one('.' + CSS_VALUE);
+
+            if (!inputNode) {
+                inputNode = containerNode;
+            }
+
+            inputNode.setAttribute('aria-' + attr, ariaVal);
+        },
+
+        /**
+         * Set the 'aria-label' attributes on input nodes.
+         *
+         * @method _setAriaLabelElements
+         * @protected
+         */
+        _setAriaElements: function() {
+            var instance = this,
+                ariaLabels = instance.get('ariaLabels');
+
+            instance._setAriaAttr(ariaLabels.b, 'label', instance._bContainer);
+            instance._setAriaAttr(ariaLabels.g, 'label', instance._gContainer);
+            instance._setAriaAttr(ariaLabels.h, 'label', instance._hContainer);
+            instance._setAriaAttr(ariaLabels.hex, 'label', instance._outputContainer);
+            instance._setAriaAttr(ariaLabels.r, 'label', instance._rContainer);
+            instance._setAriaAttr(ariaLabels.s, 'label', instance._sContainer);
+            instance._setAriaAttr(ariaLabels.v, 'label', instance._vContainer);
+
+            instance._setAriaAttr(MAX_COLOR, 'valuemax', instance._bContainer);
+            instance._setAriaAttr(MAX_COLOR, 'valuemax', instance._gContainer);
+            instance._setAriaAttr(MAX_COLOR, 'valuemax', instance._rContainer);
+            instance._setAriaAttr(MAX_HUE, 'valuemax', instance._hContainer);
+            instance._setAriaAttr(MAX_SATURATION, 'valuemax', instance._sContainer);
+            instance._setAriaAttr(MAX_VALUE, 'valuemax', instance._vContainer);
+
+            instance._setAriaAttr(MIN_COLOR, 'valuemin', instance._bContainer);
+            instance._setAriaAttr(MIN_COLOR, 'valuemin', instance._gContainer);
+            instance._setAriaAttr(MIN_COLOR, 'valuemin', instance._rContainer);
+            instance._setAriaAttr(MIN_HUE, 'valuemin', instance._hContainer);
+            instance._setAriaAttr(MIN_SATURATION, 'valuemin', instance._sContainer);
+            instance._setAriaAttr(MIN_VALUE, 'valuemin', instance._vContainer);
+        },
+
+        /**
          * Sets X and Y coordinates of HS container.
          *
          * @method _setHSContainerXY
@@ -1178,7 +1234,11 @@ var AColor = A.Color,
          * @protected
          */
         _setFieldValue: function(fieldNode, value) {
+            var instance = this;
+
             fieldNode.one('.' + CSS_VALUE).set('value', value);
+
+            instance._setAriaAttr(value, 'valuenow', fieldNode);
         },
 
         /**
@@ -1558,6 +1618,25 @@ var AColor = A.Color,
          * @static
          */
         ATTRS: {
+
+            /**
+             * Collection of strings to be used as 'aria-label's for field inputs.
+             *
+             * @attribute ariaLabels
+             * @type {Object}
+             */
+            ariaLabels: {
+                value: {
+                    a: 'Alpha',
+                    b: 'Blue',
+                    g: 'Green',
+                    h: 'Hue',
+                    hex: 'Hex',
+                    r: 'Red',
+                    s: 'Saturation',
+                    v: 'Value'
+                }
+            },
 
             /**
              * Determines if HSVA and RGB input `controls` are visible.
