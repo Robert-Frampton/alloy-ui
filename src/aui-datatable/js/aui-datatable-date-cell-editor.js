@@ -209,6 +209,26 @@ DateCellEditor = A.Component.create({
         /**
          * TODO. Wanna help? Please send a Pull Request.
          *
+         * @method _syncElementsFocus
+         * @protected
+         */
+        _syncElementsFocus: function() {
+            var instance = this;
+            var calendar = instance.calendar;
+            var date = calendar.get('selectedDates')[0];
+
+            A.DateCellEditor.superclass._syncElementsFocus.apply(instance, arguments);
+
+            if (!date) {
+                date = calendar.get('date');
+            }
+
+            calendar._highlightDateNode(date);
+        },
+
+        /**
+         * TODO. Wanna help? Please send a Pull Request.
+         *
          * @method _uiSetValue
          * @param val
          * @protected
