@@ -420,6 +420,16 @@ YUI.add('aui-datatable-tests', function(Y) {
                     }
                 ]
             }).render();
+
+            this.simulateKey = function(node, code, focusNode) {
+                if (focusNode) {
+                    node.focus();
+                }
+
+                node.simulate('keydown', {
+                    keyCode: code
+                })
+            }
         },
 
         'navigate on arrow keys': function() {
@@ -439,53 +449,64 @@ YUI.add('aui-datatable-tests', function(Y) {
 
             //simulate right arrow key press
 
-            boundingBox.simulate('keydown', {
-                keyCode: 39
-            });
+            this.simulateKey(boundingBox, 39);
+
             activeCoords = dataTable.get('activeCoord');
 
             Y.ArrayAssert.itemsAreSame(cellCoords.topRight, activeCoords, 'Right arrow should have moved selection.');
 
             //simulate down arrow key press
 
-            boundingBox.simulate('keydown', {
-                keyCode: 40
-            });
+            this.simulateKey(boundingBox, 40);
+
             activeCoords = dataTable.get('activeCoord');
 
             Y.ArrayAssert.itemsAreSame(cellCoords.bottomRight, activeCoords, 'Down arrow should have moved selection.');
 
             //simulate left arrow key press
 
-            boundingBox.simulate('keydown', {
-                keyCode: 37
-            });
+            this.simulateKey(boundingBox, 37);
+
             activeCoords = dataTable.get('activeCoord');
 
             Y.ArrayAssert.itemsAreSame(cellCoords.bottomLeft, activeCoords, 'Left arrow should have moved selection.');
 
             //simulate up arrow key press
 
-            boundingBox.simulate('keydown', {
-                keyCode: 38
-            });
+            this.simulateKey(boundingBox, 38);
+
             activeCoords = dataTable.get('activeCoord');
 
             Y.ArrayAssert.itemsAreSame(cellCoords.topLeft, activeCoords, 'Up arrow should have moved selection.');
         },
 
-        'open editor on double click': function() {
+        'open editor on enter key and double click': function() {
             var dataTable = this._dataTable,
-                firstCell = dataTable.getCell([0, 0]);
+                boundingBox = dataTable.get('boundingBox'),
+                cell = dataTable.getCell([0, 0]);
 
-            firstCell.simulate('dblclick');
+            //simulate enter key press
+
+            this.simulateKey(boundingBox, 13, true);
 
             var editorNode = Y.one('.basecelleditor');
 
             Y.Assert.isNotNull(editorNode, 'The editor should have been opened.');
+
+            var editor = Y.Widget.getByNode(editorNode);
+
+            editor.fire('cancel');
+
+            //simulate double click
+
+            cell.simulate('dblclick');
+
+            var visible = editor.get('visible');
+
+            Y.Assert.isTrue(visible, 'The editor should be visible again');
         },
 
-        'cancel cell editor': function() {
+        'cancel cell editor on click and escape key press': function() {
             var cell = this._dataTable.getCell([0, 0]),
                 newVal = 'Testing editor node save.',
                 originalVal = cell.html();
@@ -493,14 +514,33 @@ YUI.add('aui-datatable-tests', function(Y) {
             cell.simulate('dblclick');
 
             var editorNode = Y.one('.basecelleditor'),
+                editor = Y.Widget.getByNode(editorNode),
                 cancelBtn = editorNode.all('button').item(1),
                 textArea = editorNode.one('textarea');
 
             textArea.val(newVal);
 
+            //simulate click cancel button
+
             cancelBtn.focus().simulate('click');
 
+            var visible = editor.get('visible');
+
             Y.Assert.areEqual(cell.html(), originalVal);
+            Y.Assert.isFalse(visible, 'editor should be hidden');
+
+            cell.simulate('dblclick');
+
+            textArea.val(newVal);
+
+            //simulate escape key press
+
+            this.simulateKey(editorNode, 27);
+
+            visible = editor.get('visible');
+
+            Y.Assert.areEqual(cell.html(), originalVal);
+            Y.Assert.isFalse(visible, 'editor should be hidden');
         },
 
         'save cell edit': function() {
@@ -510,14 +550,96 @@ YUI.add('aui-datatable-tests', function(Y) {
             cell.simulate('dblclick');
 
             var editorNode = Y.one('.basecelleditor'),
-                textArea = editorNode.one('textarea'),
-                saveBtn = editorNode.all('button').item(0);
+                editor = Y.Widget.getByNode(editorNode),
+                saveBtn = editorNode.all('button').item(0),
+                textArea = editorNode.one('textarea');
 
             textArea.val(newVal);
 
             saveBtn.focus().simulate('click');
 
+            var visible = editor.get('visible');
+
             Y.Assert.areEqual(cell.html(), newVal);
+            Y.Assert.isFalse(visible, 'editor should be hidden');
+        },
+
+        'cell focus after cancel and save': function() {
+            var dataTable = this._dataTable,
+                boundingBox = dataTable.get('boundingBox'),
+                cell = dataTable.getCell([0, 0]),
+                coordA,
+                coordB,
+                testCoordA = [1, 0],
+                testCoordB = [2, 0];
+
+            this.simulateKey(boundingBox, 13, true);
+
+            var editorNode = Y.one('.basecelleditor'),
+                saveBtn = editorNode.all('button').item(0),
+                cancelBtn = editorNode.all('button').item(1);
+
+            cancelBtn.focus().simulate('click');
+
+            //simulate press down key to change active cell after CANCEL
+
+            this.simulateKey(boundingBox, 40);
+
+            coordA = dataTable.get('activeCoord');
+
+            Y.ArrayAssert.itemsAreSame(testCoordA, coordA);
+
+            this.simulateKey(boundingBox, 13, true);
+
+            saveBtn.focus().simulate('click');
+
+            //simulate press down key to change active cell after SAVE
+
+            this.simulateKey(boundingBox, 40);
+
+            coordB = dataTable.get('activeCoord');
+
+            Y.ArrayAssert.itemsAreSame(testCoordB, coordB);
+
+            cancelBtn.focus().simulate('click');
+        },
+
+        'calendar editor gains focus after invoke': function() {
+            var dataTable = this._dataTable,
+                boundingBox = dataTable.get('boundingBox'),
+                coords = [0,8],
+                dateCell = dataTable.getCell(coords);
+
+            dataTable.set('activeCoord', coords);
+            dataTable.set('selection', coords);
+
+            this.simulateKey(boundingBox, 13);
+
+            var dateEditorNode = Y.one('.datecelleditor');
+
+            Y.Assert.isNotNull(dateEditorNode, 'editor was not created')
+
+            this.wait(
+                function() {
+                    var calendar = Y.Widget.getByNode(dateEditorNode).calendar,
+                        dateB,
+                        node = Y.one(document.activeElement),
+                        testDate = 'Tue Jan 08 2013 12:00:00 GMT-0800 (PST)';
+
+                    //simulate changing selected date with the keyboard
+                    //simulate press down, enter, down
+
+                    this.simulateKey(node, 13);
+                    this.simulateKey(node, 40);
+                    this.simulateKey(node, 13);
+
+                    date = calendar.get('selectedDates')[0];
+
+                    Y.Assert.areEqual(testDate, date, 'date did not change');
+
+                    Y.Widget.getByNode(dateEditorNode).fire('cancel');
+                },
+            50)
         },
 
         'fields sorted on caret click': function() {
