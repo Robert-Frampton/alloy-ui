@@ -35,7 +35,7 @@
     </div>
 
     <script>
-    YUI({ lang: 'ja', filter: 'raw' }).use('aui-datepicker', function(Y) {
+    YUI({ lang: 'ja', filter: 'raw' }).use('aui-datepicker', 'aui-datepicker-accessibility', function(Y) {
         new Y.DatePicker({
             on: {
                 selectionChange: function(event) {
@@ -50,7 +50,7 @@
         });
     });
 
-    YUI({ lang: 'en-US', filter: 'raw' }).use('aui-datepicker', 'aui-datepicker-native', function(Y) {
+    YUI({ lang: 'en-US', filter: 'raw' }).use('aui-datepicker', 'aui-datepicker-native', 'aui-datepicker-accessibility', function(Y) {
         var datepicker = new Y.DatePicker({
             calendar: {
                 selectionMode: 'multiple'

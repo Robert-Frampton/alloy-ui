@@ -4,10 +4,17 @@
             "calendar",
             "base",
             "base-build",
+            "aui-aria",
             "aui-datepicker-delegate",
             "aui-datepicker-popover"
         ],
         "skinnable": true
+    },
+
+    "aui-datepicker-accessibility": {
+        "requires": [
+            "aui-datepicker"
+        ]
     },
 
     "aui-datepicker-delegate": {

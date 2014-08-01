@@ -7,6 +7,12 @@
             ]
         },
 
+        "aui-datepicker-accessibility": {
+            "jsfiles": [
+                "js/aui-datepicker-accessibility.js"
+            ]
+        },
+
         "aui-datepicker": {
             "jsfiles": [
                 "js/aui-datepicker.js"
