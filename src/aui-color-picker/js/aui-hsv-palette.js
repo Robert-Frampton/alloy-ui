@@ -226,6 +226,11 @@ var AColor = A.Color,
                 type = fieldNode.getAttribute('data-type');
 
                 fieldNode.ancestor(SELECTOR_FORM_GROUP).removeClass('has-error');
+
+                instance.fire('colorValueChange', {
+                    newValue: value,
+                    node: fieldNode
+                });
             }
             else {
                 fieldNode.ancestor(SELECTOR_FORM_GROUP).addClass('has-error');
@@ -1178,7 +1183,14 @@ var AColor = A.Color,
          * @protected
          */
         _setFieldValue: function(fieldNode, value) {
+            var instance = this;
+
             fieldNode.one('.' + CSS_VALUE).set('value', value);
+
+            instance.fire('colorValueChange', {
+                newValue: value,
+                node: fieldNode
+            });
         },
 
         /**

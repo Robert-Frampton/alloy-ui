@@ -402,6 +402,11 @@ var Lang = A.Lang,
                 instance._setFieldValue(instance._rContainer, rgbColorArray[0]);
                 instance._setFieldValue(instance._gContainer, rgbColorArray[1]);
                 instance._setFieldValue(instance._bContainer, rgbColorArray[2]);
+
+                instance.fire('colorValueChange', {
+                    newValue: MAX_ALPHA - alpha,
+                    node: instance._aContainer
+                });
             }
         },
 

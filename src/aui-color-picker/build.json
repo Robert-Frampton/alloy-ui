@@ -7,9 +7,21 @@
             ]
         },
 
+        "aui-color-palette-accessibility": {
+            "jsfiles": [
+                "js/aui-color-palette-accessibility.js"
+            ]
+        },
+
         "aui-hsv-palette": {
             "jsfiles": [
                 "js/aui-hsv-palette.js"
+            ]
+        },
+
+        "aui-hsv-palette-accessibility": {
+            "jsfiles": [
+                "js/aui-hsv-palette-accessibility.js"
             ]
         },
 

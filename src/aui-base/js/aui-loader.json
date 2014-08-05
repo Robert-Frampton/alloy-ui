@@ -198,6 +198,13 @@
         ],
         "skinnable": true
     },
+    "aui-color-palette-accessibility": {
+        "requires": [
+            "node-focusmanager",
+            "aui-aria",
+            "aui-color-palette"
+        ]
+    },
     "aui-color-picker-base": {
         "requires": [
             "aui-color-palette",
@@ -638,6 +645,11 @@
             "widget"
         ],
         "skinnable": true
+    },
+    "aui-hsv-palette-accessibility": {
+        "requires": [
+            "aui-hsv-palette"
+        ]
     },
     "aui-hsva-palette": {
         "requires": [
