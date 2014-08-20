@@ -1,6 +1,7 @@
 var Y = A;
 YUI.Env.aliases = YUI.Env.aliases || {};
 Y.mix(YUI.Env.aliases, {
+    "aui-accessible-dd": ["aui-accessible-dd-delegate","aui-accessible-dd-drag","aui-accessible-dd-drop"],
     "aui-autosize": ["aui-autosize-iframe"],
     "aui-base": ["oop","yui-throttle","aui-classnamemanager","aui-debounce","aui-base-core","aui-base-lang","aui-node-base"],
     "aui-button": ["aui-button-core"],
