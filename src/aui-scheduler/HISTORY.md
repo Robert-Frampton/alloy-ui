@@ -4,6 +4,7 @@
 
 ## @VERSION@
 
+* [AUI-1408](https://issues.liferay.com/browse/AUI-1408) Mark aui-scheduler day view accessible
 * [AUI-1591](https://issues.liferay.com/browse/AUI-1591) Fix scheduler behavior on touch screen desktop computers
 * [AUI-1546](https://issues.liferay.com/browse/AUI-1546) The Scheduler month view is incorrect if there are multiple overlapping events at the first day of the week
 * [AUI-1544](https://issues.liferay.com/browse/AUI-1544) Javascript error breaks Scheduler month view with multiple overlapping events

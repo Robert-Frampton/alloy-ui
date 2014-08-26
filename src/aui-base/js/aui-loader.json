@@ -998,6 +998,11 @@
         ],
         "skinnable": true
     },
+    "aui-scheduler-view-accessibility": {
+        "requires": [
+            "aui-scheduler-base"
+        ]
+    },
     "aui-scheduler-view-agenda": {
         "requires": [
             "aui-scheduler-base"

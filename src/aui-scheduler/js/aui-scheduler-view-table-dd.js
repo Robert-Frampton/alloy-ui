@@ -72,8 +72,50 @@ A.SchedulerTableViewDD.ATTRS = {
             );
         },
         validator: isObject
-    }
+    },
 
+    /**
+     * Defines the keyboard configuration object for
+     * `Plugin.NodeFocusManager`.
+     *
+     * @attribute focusManagerConfig
+     * @default {
+     *    activeDescendant: 0,
+     *    circular: false,
+     *    descendants: '.' + CSS_SVT_COLGRID,
+     *    keys: {
+     *        next: 'down:40',
+     *        previous: 'down:38'
+     *    }
+     * }
+     * @type {Object}
+     */
+    focusManagerConfig: {
+        value: {
+            activeDescendant: 0,
+            circular: false,
+            descendants: '.' + CSS_SVT_COLGRID,
+            keys: {
+                next: 'down:39',
+                previous: 'down:37'
+            }
+        },
+        validator: isObject,
+        writeOnce: true
+    },
+
+    /**
+     * String representing the table marker class.
+     *
+     * @attribute markerNodeClass
+     * @default '.' + CSS_SVT_COLGRID
+     * @type {String}
+     */
+    markerNodeClass: {
+        value: '.' + CSS_SVT_COLGRID,
+        validator: Lang.isString,
+        writeOnce: true
+    }
 };
 
 A.mix(A.SchedulerTableViewDD.prototype, {
@@ -93,6 +135,17 @@ A.mix(A.SchedulerTableViewDD.prototype, {
         instance.after(instance.viewDDBindUI, instance, 'bindUI');
         instance.after(instance.viewDDRenderUI, instance, 'renderUI');
         instance.after(instance.viewDDSyncUI, instance, 'syncUI');
+    },
+
+    /**
+     * Gets the node to be plugged with the 'NodeFoucusmanager'.
+     *
+     * @method getFocusManagerNode
+     */
+    getFocusManagerNode: function() {
+        var instance = this;
+
+        return instance.tableRowContainer;
     },
 
     /**
@@ -447,25 +500,9 @@ A.mix(A.SchedulerTableViewDD.prototype, {
      */
     _onMouseDownGrid: function(event) {
         var instance = this;
-        var scheduler = instance.get('scheduler');
-        var recorder = scheduler.get('eventRecorder');
         var target = event.target;
 
-        if (recorder && !scheduler.get('disabled') &&
-            target.test(['.' + CSS_SVT_COLGRID, '.' + CSS_SVT_TABLE_DATA_COL].join())) {
-
-            instance._recording = true;
-
-            instance._syncCellDimensions();
-
-            var eventXY = instance._offsetXY([event.pageX, event.pageY], -1);
-
-            instance.lassoStartPosition = instance.lassoLastPosition = instance._findPosition(eventXY);
-
-            instance.renderLasso(instance.lassoStartPosition, instance.lassoLastPosition);
-
-            instance.rowsContainerNode.unselectable();
-        }
+        instance._startLasso(target, [event.pageX, event.pageY]);
     },
 
     /**
@@ -479,12 +516,54 @@ A.mix(A.SchedulerTableViewDD.prototype, {
         var instance = this;
 
         var eventXY = [event.pageX, event.pageY];
-        var position = instance._findPosition(instance._offsetXY(eventXY, -1));
 
-        if (instance._recording && instance._hasLassoChanged(position)) {
-            instance.lassoLastPosition = position;
+        instance._updateLassoForMove(eventXY);
+    },
 
-            instance.renderLasso(instance.lassoStartPosition, position);
+    /**
+     * Handle `accessibilityActiveDescendantChange` events.
+     *
+     * @method _onAccessibilityActiveDescendantChange
+     * @param {EventFacade} event
+     * @protected
+     */
+    _onAccessibilityActiveDescendantChange: function(event) {
+        var instance = this,
+            activeElement = A.Node(document.activeElement);
+
+        if (activeElement.test('.' + CSS_SVT_COLGRID)) {
+            instance._updateLassoForMove(event.centerXY);
+        }
+    },
+
+    /**
+     * Handle `accessibilityKeyDown` events.
+     *
+     * @method _onAccessibilityActiveDescendantChange
+     * @param {EventFacade} event
+     * @protected
+     */
+    _onAccessibilityKeyDown: function(event) {
+        var instance = this;
+
+        if (event.node.test('.' + CSS_SVT_COLGRID)) {
+            instance._startLasso(event.node, event.centerXY);
+        }
+    },
+
+    /**
+     * Handle `accessibilityKeyUp` events.
+     *
+     * @method _onAccessibilityActiveDescendantChange
+     * @param {EventFacade} event
+     * @protected
+     */
+    _onAccessibilityKeyUp: function(event) {
+        var instance = this,
+            activeElement = A.Node(document.activeElement);
+
+        if (activeElement.test('.' + CSS_SVT_COLGRID)) {
+            instance._updateRecorder();
         }
     },
 
@@ -497,31 +576,8 @@ A.mix(A.SchedulerTableViewDD.prototype, {
      */
     _onMouseUpGrid: function() {
         var instance = this;
-        var scheduler = instance.get('scheduler');
-        var recorder = scheduler.get('eventRecorder');
 
-        if (recorder && instance._recording && !scheduler.get('disabled')) {
-            var startPositionDate = instance._getPositionDate(instance.lassoStartPosition);
-            var endPositionDate = instance._getPositionDate(instance.lassoLastPosition);
-
-            var startDate = new Date(Math.min(startPositionDate, endPositionDate));
-            startDate.setHours(0, 0, 0);
-
-            var endDate = new Date(Math.max(startPositionDate, endPositionDate));
-            endDate.setHours(23, 59, 59);
-
-            recorder.setAttrs({
-                allDay: true,
-                endDate: endDate,
-                startDate: startDate
-            }, {
-                silent: true
-            });
-
-            recorder.showPopover(instance.lasso);
-
-            instance._recording = false;
-        }
+        instance._updateRecorder();
     },
 
     /**
@@ -553,6 +609,36 @@ A.mix(A.SchedulerTableViewDD.prototype, {
             moveOnEnd: false,
             positionProxy: false
         });
+    },
+
+    /**
+     * Starts rendering the lasso based on Node and pageXY position.
+     *
+     * @method _startLasso
+     * @param {Node} node
+     * @param {Array} pageXY
+     * @protected
+     */
+    _startLasso: function(node, pageXY) {
+        var instance = this;
+        var scheduler = instance.get('scheduler');
+        var recorder = scheduler.get('eventRecorder');
+
+        if (recorder && !scheduler.get('disabled') &&
+            node.test(['.' + CSS_SVT_COLGRID, '.' + CSS_SVT_TABLE_DATA_COL].join())) {
+
+            instance._recording = true;
+
+            instance._syncCellDimensions();
+
+            var eventXY = instance._offsetXY(pageXY, -1);
+
+            instance.lassoStartPosition = instance.lassoLastPosition = instance._findPosition(eventXY);
+
+            instance.renderLasso(instance.lassoStartPosition, instance.lassoLastPosition);
+
+            instance.rowsContainerNode.unselectable();
+        }
     },
 
     /**
@@ -599,6 +685,59 @@ A.mix(A.SchedulerTableViewDD.prototype, {
 
         instance.proxyNode.appendTo(instance.rowsContainerNode);
         instance.proxyNode.setContent(evt.get('content'));
+    },
+
+    /**
+     * Updates the lasso based on xy position.
+     *
+     * @method _updateRecorder
+     * @param {Array} eventXY
+     * @protected
+     */
+    _updateLassoForMove: function(eventXY) {
+        var instance = this;
+        var position = instance._findPosition(instance._offsetXY(eventXY, -1));
+
+        if (instance._recording && instance._hasLassoChanged(position)) {
+            instance.lassoLastPosition = position;
+
+            instance.renderLasso(instance.lassoStartPosition, position);
+        }
+    },
+
+    /**
+     * Updates the 'eventRecorder' based on the start and end position date.
+     *
+     * @method _updateRecorder
+     * @protected
+     */
+    _updateRecorder: function() {
+        var instance = this;
+        var scheduler = instance.get('scheduler');
+        var recorder = scheduler.get('eventRecorder');
+
+        if (recorder && instance._recording && !scheduler.get('disabled')) {
+            var startPositionDate = instance._getPositionDate(instance.lassoStartPosition);
+            var endPositionDate = instance._getPositionDate(instance.lassoLastPosition);
+
+            var startDate = new Date(Math.min(startPositionDate, endPositionDate));
+            startDate.setHours(0, 0, 0);
+
+            var endDate = new Date(Math.max(startPositionDate, endPositionDate));
+            endDate.setHours(23, 59, 59);
+
+            recorder.setAttrs({
+                allDay: true,
+                endDate: endDate,
+                startDate: startDate
+            }, {
+                silent: true
+            });
+
+            recorder.showPopover(instance.lasso);
+
+            instance._recording = false;
+        }
     }
 });
 

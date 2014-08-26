@@ -77,6 +77,7 @@ var Lang = A.Lang,
     CSS_SCHEDULER_VIEW_DAY_HEADER_VIEW_LABEL = getCN('scheduler-view', 'day', 'header', 'view', 'label'),
     CSS_SCHEDULER_VIEW_DAY_ICON_GRIP_HORIZONTAL = getCN('scheduler-view', 'icon', 'grip', 'horizontal'),
     CSS_SCHEDULER_VIEW_DAY_MARKER_DIVISION = getCN('scheduler-view', 'marker', 'division'),
+    CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD = getCN('scheduler-view', 'marker', 'child'),
     CSS_SCHEDULER_VIEW_DAY_MARKERCELL = getCN('scheduler-view', 'markercell'),
     CSS_SCHEDULER_VIEW_DAY_MARKERS = getCN('scheduler-view', 'markers'),
     CSS_SCHEDULER_VIEW_DAY_RESIZER = getCN('scheduler-view', 'day', 'resizer'),
@@ -98,8 +99,8 @@ var Lang = A.Lang,
         '</div>',
 
     TPL_SCHEDULER_VIEW_DAY_MARKERCELL = '<div class="' + CSS_SCHEDULER_VIEW_DAY_MARKERCELL + '">' +
-        '<div class="' + CSS_SCHEDULER_VIEW_DAY_MARKER_DIVISION + '"></div>' +
-        '</div>',
+        '<div class="' + [CSS_SCHEDULER_VIEW_DAY_MARKER_DIVISION, CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD].join(' ') + '" data-colnumber="0"></div>' +
+        '<div class="' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD + '" data-colnumber="0"></div></div>',
 
     TPL_SCHEDULER_VIEW_DAY_HEADER_VIEW_LABEL = '<span class="' + CSS_SCHEDULER_VIEW_DAY_HEADER_VIEW_LABEL +
         '">{label}</span>',
@@ -258,6 +259,36 @@ var SchedulerDayView = A.Component.create({
             value: function(evt) {
                 return (evt.getHoursDuration() <= 24 && !evt.get('allDay'));
             }
+        },
+
+        /**
+        * Defines the keyboard configuration object for
+        * `Plugin.NodeFocusManager`.
+        *
+        * @attribute focusManagerConfig
+        * @default {
+        *    activeDescendant: 0,
+        *    circular: false,
+        *    descendants: '.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD,
+        *    keys: {
+        *        next: 'down:40',
+        *        previous: 'down:38'
+        *    }
+        * }
+        * @type {Object}
+        */
+        focusManagerConfig: {
+            value: {
+                activeDescendant: 0,
+                circular: false,
+                descendants: '.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD,
+                keys: {
+                    next: 'down:40',
+                    previous: 'down:38'
+                }
+            },
+            validator: isObject,
+            writeOnce: true
         },
 
         /**
@@ -457,6 +488,19 @@ var SchedulerDayView = A.Component.create({
          */
         markercellsNode: {
             valueFn: '_valueMarkercellsNode'
+        },
+
+        /**
+        * String representing the table marker class.
+        *
+        * @attribute markerNodeClass
+        * @default '.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD
+        * @type {String}
+        */
+        markerNodeClass: {
+            value: '.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD,
+            validator: isString,
+            writeOnce: true
         },
 
         /**
@@ -748,6 +792,17 @@ var SchedulerDayView = A.Component.create({
 
             return DateMath.getDayOffset(
                 DateMath.safeClearTime(date), viewDate);
+        },
+
+        /**
+         * Gets the node to be plugged with the 'NodeFoucusmanager'.
+         *
+         * @method getFocusManagerNode
+         */
+        getFocusManagerNode: function() {
+            var instance = this;
+
+            return instance.tableNode;
         },
 
         /**
@@ -1086,11 +1141,11 @@ var SchedulerDayView = A.Component.create({
          * coordinates as well as the XY coordinates from the event page.
          *
          * @method getXYDelta
-         * @param {EventFacade} event
+         * @param {Node} node
+         * @param {Array} pageXY
          */
-        getXYDelta: function(event) {
-            var xy = event.currentTarget.getXY(),
-                pageXY = [event.pageX, event.pageY];
+        getXYDelta: function(node, pageXY) {
+            var xy = node.getXY();
 
             return A.Array.map(xy, function(val, i) {
                 return (pageXY[i] - val);
@@ -1347,6 +1402,52 @@ var SchedulerDayView = A.Component.create({
         },
 
         /**
+         * Fires on the accessibilityActiveDescendantChange event.
+         *
+         * @method _onAccessibilityActiveDescendantChange
+         * @param {EventFacade} event
+         * @protected
+         */
+        _onAccessibilityActiveDescendantChange: function(event) {
+            var instance = this,
+                activeElement = A.Node(document.activeElement);
+
+            if (activeElement.test('.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD)) {
+                instance._updateColumnEvent(event.activeColumn, event.centerXY);
+            }
+        },
+
+        /**
+         * Fires on the accessibilityKeyDown event.
+         *
+         * @method _onAccessibilityKeyDown
+         * @param {EventFacade} event
+         * @protected
+         */
+        _onAccessibilityKeyDown: function(event) {
+            var instance = this;
+
+            if (event.node.test('.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD)) {
+                instance._prepareEventCreation(instance.colDaysNode.item(event.colNumber), event.centerXY);
+            }
+        },
+
+        /**
+         * Fires on the accessibilityKeyUp event.
+         *
+         * @method _onAccessibilityKeyUp
+         * @protected
+         */
+        _onAccessibilityKeyUp: function() {
+            var instance = this,
+                activeElement = A.Node(document.activeElement);
+
+            if (activeElement.test('.' + CSS_SCHEDULER_VIEW_DAY_MARKER_CHILD)) {
+                instance._openTableColEventRecorder();
+            }
+        },
+
+        /**
          * Handles `clickDays` events.
          *
          * @method _onClickDaysHeader
@@ -1442,23 +1543,8 @@ var SchedulerDayView = A.Component.create({
          */
         _onGestureMoveEndTableCol: function() {
             var instance = this;
-            var scheduler = instance.get('scheduler');
-            var recorder = scheduler.get('eventRecorder');
 
-            if (recorder && !scheduler.get('disabled')) {
-                if (instance.creationStartDate) {
-                    instance.plotEvent(recorder);
-
-                    recorder.showPopover();
-                }
-            }
-
-            instance.creationStartDate = null;
-            instance.resizing = false;
-            instance.startXY = null;
-
-            instance._removeResizer();
-            instance.get('boundingBox').selectable();
+            instance._openTableColEventRecorder();
         },
 
         /**
@@ -1478,7 +1564,7 @@ var SchedulerDayView = A.Component.create({
                 recorder.hidePopover();
 
                 if (target.test('.' + CSS_SCHEDULER_VIEW_DAY_TABLE_COL_SHIM)) {
-                    this._prepareEventCreation(event);
+                    this._prepareEventCreation(event.currentTarget, [event.pageX, event.pageY]);
                 }
                 else if (target.test(
                             ['.' + CSS_SCHEDULER_VIEW_DAY_RESIZER,
@@ -1501,6 +1587,137 @@ var SchedulerDayView = A.Component.create({
         _onGestureMoveTableCol: function(event) {
             var instance = this;
             var activeColumn = this._findActiveColumn(event);
+
+            instance._updateColumnEvent(activeColumn, [event.pageX, event.pageY]);
+        },
+
+        /**
+         * Handles `mouseEnter` events.
+         *
+         * @method _onMouseEnterEvent
+         * @param {EventFacade} event
+         * @protected
+         */
+        _onMouseEnterEvent: function(event) {
+            var instance = this;
+            var target = event.currentTarget;
+            var evt = target.getData('scheduler-event');
+
+            if (evt && !evt.get('disabled')) {
+                instance.resizerNode.appendTo(target);
+            }
+        },
+
+        _openTableColEventRecorder: function() {
+            var instance = this;
+            var scheduler = instance.get('scheduler');
+            var recorder = scheduler.get('eventRecorder');
+
+            if (recorder && !scheduler.get('disabled')) {
+                if (instance.creationStartDate) {
+                    instance.plotEvent(recorder);
+
+                    recorder.showPopover();
+                }
+            }
+
+            instance.creationStartDate = null;
+            instance.resizing = false;
+            instance.startXY = null;
+
+            instance._removeResizer();
+            instance.get('boundingBox').selectable();
+        },
+
+        /**
+         * Handles `scheduler` value change.
+         *
+         * @method _onSchedulerChange
+         * @param {EventFacade} event
+         * @protected
+         */
+        _onSchedulerChange: function(event) {
+            var instance = this;
+
+            if (instance.headerView) {
+                instance.headerView.set('scheduler', event.newVal);
+            }
+        },
+
+        /**
+         * Handles `mouseLeave` events.
+         *
+         * @method _onMouseLeaveEvent
+         * @param {EventFacade} event
+         * @protected
+         */
+        _onMouseLeaveEvent: function() {
+            var instance = this;
+
+            if (!instance.resizing) {
+                instance._removeResizer();
+            }
+        },
+
+        /**
+         * Prepares for the creation of a new scheduler event.
+         *
+         * @method _prepareEventCreation
+         * @protected
+         */
+        _prepareEventCreation: function(column, pageXY, duration) {
+            var clickLeftTop = this.getXYDelta(column, pageXY),
+                colNumber = toNumber(column.attr('data-colnumber')),
+                endDate,
+                startDate = this.getDateByColumn(colNumber),
+                recorder = this.get('scheduler').get('eventRecorder');
+
+            this.startXY = pageXY;
+
+            this.roundToNearestHour(startDate, this.getYCoordTime(clickLeftTop[1]));
+
+            if (!duration) {
+                duration = recorder.get('duration');
+            }
+            endDate = DateMath.add(startDate, DateMath.MINUTES, duration);
+
+            recorder.move(startDate, {
+                silent: true
+            });
+
+            recorder.setAttrs({
+                allDay: false,
+                endDate: endDate
+            }, {
+                silent: true
+            });
+
+            this.creationStartDate = startDate;
+        },
+
+        /**
+         * Removes the `SchedulerView`'s resizer `Node` from the DOM.
+         *
+         * @method _removeResizer
+         * @protected
+         */
+        _removeResizer: function() {
+            var instance = this;
+
+            instance.resizerNode.remove();
+        },
+
+        /**
+         * Removes the `SchedulerView`'s resizer `Node` from the DOM.
+         *
+         * @method _updateColumnEvent
+         * @param {Node} activeColumn
+         * @param {Array} eventXY
+         * @protected
+         */
+        _updateColumnEvent: function(activeColumn, eventXY) {
+            var instance = this;
+
             var recorder = instance.get('scheduler').get('eventRecorder');
 
             if (instance.activeColumn !== activeColumn) {
@@ -1512,7 +1729,7 @@ var SchedulerDayView = A.Component.create({
 
             if (creationStartDate) {
                 var delta = roundToNearestMultiple(
-                    instance.calculateYDelta(instance.startXY, [event.pageX, event.pageY]),
+                    instance.calculateYDelta(instance.startXY, eventXY),
                     instance.getTickY()
                 );
 
@@ -1537,103 +1754,6 @@ var SchedulerDayView = A.Component.create({
                     instance._delta = delta;
                 }
             }
-        },
-
-        /**
-         * Handles `mouseEnter` events.
-         *
-         * @method _onMouseEnterEvent
-         * @param {EventFacade} event
-         * @protected
-         */
-        _onMouseEnterEvent: function(event) {
-            var instance = this;
-            var target = event.currentTarget;
-            var evt = target.getData('scheduler-event');
-
-            if (evt && !evt.get('disabled')) {
-                instance.resizerNode.appendTo(target);
-            }
-        },
-
-        /**
-         * Handles `mouseLeave` events.
-         *
-         * @method _onMouseLeaveEvent
-         * @param {EventFacade} event
-         * @protected
-         */
-        _onMouseLeaveEvent: function() {
-            var instance = this;
-
-            if (!instance.resizing) {
-                instance._removeResizer();
-            }
-        },
-
-        /**
-         * Handles `scheduler` value change.
-         *
-         * @method _onSchedulerChange
-         * @param {EventFacade} event
-         * @protected
-         */
-        _onSchedulerChange: function(event) {
-            var instance = this;
-
-            if (instance.headerView) {
-                instance.headerView.set('scheduler', event.newVal);
-            }
-        },
-
-        /**
-         * Prepares for the creation of a new scheduler event.
-         *
-         * @method _prepareEventCreation
-         * @protected
-         */
-        _prepareEventCreation: function(event, duration) {
-            var clickLeftTop = this.getXYDelta(event),
-                colNumber = toNumber(event.currentTarget.attr('data-colnumber')),
-                endDate,
-                startDate = this.getDateByColumn(colNumber),
-                recorder = this.get('scheduler').get('eventRecorder');
-
-            this.startXY = [event.pageX, event.pageY];
-
-            this.roundToNearestHour(startDate, this.getYCoordTime(clickLeftTop[1]));
-
-            if (!duration) {
-                duration = recorder.get('duration');
-            }
-            endDate = DateMath.add(startDate, DateMath.MINUTES, duration);
-
-            recorder.move(startDate, {
-                silent: true
-            });
-
-            recorder.setAttrs({
-                allDay: false,
-                endDate: endDate
-            }, {
-                silent: true
-            });
-
-            this.creationStartDate = startDate;
-
-            event.halt();
-        },
-
-        /**
-         * Removes the `SchedulerView`'s resizer `Node` from the DOM.
-         *
-         * @method _removeResizer
-         * @protected
-         */
-        _removeResizer: function() {
-            var instance = this;
-
-            instance.resizerNode.remove();
         },
 
         /**

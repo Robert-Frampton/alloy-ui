@@ -1026,6 +1026,11 @@ Y.mix(YUI.Env[Y.version].modules, {
         ],
         "skinnable": true
     },
+    "aui-scheduler-view-accessibility": {
+        "requires": [
+            "aui-scheduler-base"
+        ]
+    },
     "aui-scheduler-view-agenda": {
         "requires": [
             "aui-scheduler-base"
@@ -1407,4 +1412,4 @@ Y.mix(YUI.Env[Y.version].modules, {
         ]
     }
 });
-YUI.Env[Y.version].md5 = '13c0d691836e487bd1e66a1f26ca8706';
+YUI.Env[Y.version].md5 = '4c4d872ba893a3aafaa28d2c7b1dc755';
