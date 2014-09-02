@@ -4,7 +4,7 @@
 
 ## @VERSION@
 
-No registries yet.
+* [AUI-1353](https://issues.liferay.com/browse/AUI-1353) Make aui-datepicker accessible
 
 ## [3.0.0pr1](https://github.com/liferay/alloy-ui/releases/tag/3.0.0pr1)
 

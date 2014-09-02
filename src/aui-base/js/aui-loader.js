@@ -389,6 +389,12 @@ Y.mix(YUI.Env[Y.version].modules, {
         ],
         "skinnable": true
     },
+    "aui-datepicker-accessibility": {
+        "requires": [
+            "aui-aria",
+            "aui-datepicker"
+        ]
+    },
     "aui-datepicker-delegate": {
         "requires": [
             "node-event-delegate",
@@ -1407,4 +1413,4 @@ Y.mix(YUI.Env[Y.version].modules, {
         ]
     }
 });
-YUI.Env[Y.version].md5 = '13c0d691836e487bd1e66a1f26ca8706';
+YUI.Env[Y.version].md5 = '15f1d67a3ed10f93783c17c046d0dd7e';

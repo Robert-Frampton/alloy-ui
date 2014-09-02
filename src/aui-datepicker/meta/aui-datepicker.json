@@ -10,6 +10,13 @@
         "skinnable": true
     },
 
+    "aui-datepicker-accessibility": {
+        "requires": [
+            "aui-aria",
+            "aui-datepicker"
+        ]
+    },
+
     "aui-datepicker-delegate": {
         "requires": [
             "node-event-delegate",
