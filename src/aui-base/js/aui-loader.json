@@ -1,4 +1,25 @@
 {
+    "aui-accessible-dd": {
+        "use": [
+            "aui-accessible-dd-delegate",
+            "aui-accessible-dd-drag",
+            "aui-accessible-dd-drop"
+        ]
+    },
+    "aui-accessible-dd-delegate": {
+        "requires": [
+            "aui-component",
+            "dd-delegate"
+        ]
+    },
+    "aui-accessible-dd-drag": {
+        "requires": [
+            "event-key"
+        ]
+    },
+    "aui-accessible-dd-drop": {
+        "requires": []
+    },
     "aui-ace-autocomplete-base": {
         "requires": [
             "aui-ace-editor"
