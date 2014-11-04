@@ -264,8 +264,10 @@ BaseOptionsCellEditor = A.Component.create({
             var instance = this;
             var elements = instance.elements;
             var optionsBuffer = [];
+            var labelsBuffer = [];
             var wrappersBuffer = [];
             var optionTpl = instance.OPTION_TEMPLATE;
+            var optionLabelTpl = instance.OPTION_LABEL;
             var optionWrapperTpl = instance.OPTION_WRAPPER;
 
             A.each(val, function(oLabel, oValue) {
@@ -280,24 +282,38 @@ BaseOptionsCellEditor = A.Component.create({
                     optionsBuffer.push(L.sub(optionTpl, values));
                 }
 
+                if (optionLabelTpl) {
+                    labelsBuffer.push(L.sub(optionLabelTpl, values));
+                }
+
                 if (optionWrapperTpl) {
                     wrappersBuffer.push(L.sub(optionWrapperTpl, values));
                 }
             });
 
             var options = A.NodeList.create(optionsBuffer.join(''));
+            var labels = A.NodeList.create(labelsBuffer.join(''));
             var wrappers = A.NodeList.create(wrappersBuffer.join(''));
+
+            var optionSet = options;
+
+            if (labels.size()) {
+                labels.each(function(label, i) {
+                    label.prepend(optionSet.item(i));
+                });
+
+                optionSet = labels;
+            }
 
             if (wrappers.size()) {
                 wrappers.each(function(wrapper, i) {
-                    wrapper.prepend(options.item(i));
+                    wrapper.prepend(optionSet.item(i));
                 });
 
-                elements.setContent(wrappers);
+                optionSet = wrappers;
             }
-            else {
-                elements.setContent(options);
-            }
+
+            elements.setContent(optionSet);
 
             instance.options = options;
         },

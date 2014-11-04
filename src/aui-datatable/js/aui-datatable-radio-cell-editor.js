@@ -29,7 +29,8 @@ var RadioCellEditor = A.Component.create({
 
     prototype: {
         OPTION_TEMPLATE: '<input class="field-input-choice" id="{id}" name="{name}" type="radio" value="{value}"/>',
-        OPTION_WRAPPER: '<label class="radio" for="{id}"> {label}</label>',
+        OPTION_LABEL: '<label for="{id}"> {label}</label>',
+        OPTION_WRAPPER: '<div class="radio"></div>',
 
         /**
          * Gets the `A.RadioCellEditor` input value.
