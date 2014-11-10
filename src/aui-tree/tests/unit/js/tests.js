@@ -2,36 +2,6 @@ YUI.add('aui-tree-tests', function(Y) {
 
     var suite = new Y.Test.Suite('aui-tree');
 
-    var createNewTreeView = function() {
-        return new Y.TreeView({
-            children: [
-                {
-                    children: [
-                        {
-                            id: 'one-one'
-                        },
-                        {
-                            id: 'one-two'
-                        },
-                        {
-                            id: 'one-three'
-                        },
-                        {
-                            id: 'one-four'
-                        }
-                    ],
-                    id: 'one'
-                },
-                {
-                    id: 'two'
-                },
-                {
-                    id: 'three'
-                }
-            ]
-        });
-    };
-
     suite.add(new Y.Test.Case({
         name: 'Tree View',
 
@@ -51,7 +21,19 @@ YUI.add('aui-tree-tests', function(Y) {
             var childNode,
                 tree;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             childNode = tree.getNodeById('one');
 
@@ -62,7 +44,19 @@ YUI.add('aui-tree-tests', function(Y) {
             var childNode,
                 tree;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             childNode = tree.getNodeById('bogey');
 
@@ -73,7 +67,33 @@ YUI.add('aui-tree-tests', function(Y) {
             var tree,
                 node;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        children: [
+                            {
+                                id: 'one-one'
+                            },
+                            {
+                                id: 'one-two'
+                            },
+                            {
+                                id: 'one-three'
+                            },
+                            {
+                                id: 'one-four'
+                            }
+                        ],
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             node = tree.getNodeById('one');
 
@@ -84,7 +104,33 @@ YUI.add('aui-tree-tests', function(Y) {
             var tree,
                 node;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        children: [
+                            {
+                                id: 'one-one'
+                            },
+                            {
+                                id: 'one-two'
+                            },
+                            {
+                                id: 'one-three'
+                            },
+                            {
+                                id: 'one-four'
+                            }
+                        ],
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             node = tree.getNodeById('two');
 
@@ -129,7 +175,19 @@ YUI.add('aui-tree-tests', function(Y) {
             var node,
                 tree;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             node = tree.getNodeById('two');
 
@@ -148,7 +206,19 @@ YUI.add('aui-tree-tests', function(Y) {
             var node,
                 tree;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             node = tree.getNodeById('bogey');
 
@@ -163,7 +233,19 @@ YUI.add('aui-tree-tests', function(Y) {
             var node,
                 tree;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             node = tree.getNodeById('two');
 
@@ -200,7 +282,19 @@ YUI.add('aui-tree-tests', function(Y) {
             var node,
                 tree;
 
-            tree = createNewTreeView();
+            tree = new Y.TreeView({
+                children: [
+                    {
+                        id: 'one'
+                    },
+                    {
+                        id: 'two'
+                    },
+                    {
+                        id: 'three'
+                    }
+                ]
+            });
 
             node = new Y.TreeNode();
 
@@ -554,6 +648,122 @@ YUI.add('aui-tree-tests', function(Y) {
             rootNode.expand();
 
             test.wait();
+        },
+
+        'TreeNodeTask should not remove \'tree-node-child-unchecked\' class from nodes with unchecked descendants': function() {
+            var childNode,
+                children,
+                grandChildNode,
+                lazyRenderTimeout,
+                rootTreeNode,
+                rootTreeNodeCB,
+                test = this,
+                treeView;
+
+            treeView = new Y.TreeView({
+                children: [
+                    {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        id: 'ChildA',
+                                        type: 'task'
+                                    },
+                                    {
+                                        children: [
+                                            {
+                                                id: 'GrandChildA',
+                                                type: 'task'
+                                            }
+                                        ],
+                                        id: 'ChildB',
+                                        type: 'task'
+                                    }
+                                ],
+                                id: 'ParentA',
+                                type: 'task'
+                            },
+                            {
+                                id: 'ParentB',
+                                type: 'task'
+                            }
+                        ],
+                        id: 'GrandParent',
+                        type: 'task'
+                    }
+                ]
+            });
+
+            children = treeView.getChildren(true);
+
+            lazyRenderTimeout = (children.length * 300);
+
+            test.wait(function() {
+                childNode = treeView.getNodeById('ChildB');
+                grandChildNode = treeView.getNodeById('GrandChildA');
+                rootTreeNode = treeView.getNodeById('GrandParent');
+                rootTreeNodeCB = rootTreeNode.get('contentBox');
+
+                rootTreeNode.check();
+
+                Y.Assert.isFalse(
+                    rootTreeNodeCB.hasClass('tree-node-child-unchecked'),
+                    'rootTreeNode does not have any unchecked decentants.');
+
+                childNode.uncheck();
+
+                Y.Assert.isTrue(
+                    rootTreeNodeCB.hasClass('tree-node-child-unchecked'),
+                    'rootTreeNode has an unchecked decentant.');
+
+                grandChildNode.check();
+
+                Y.Assert.isTrue(
+                    rootTreeNodeCB.hasClass('tree-node-child-unchecked'),
+                    'rootTreeNode has an unchecked decentant.');
+
+                childNode.check();
+
+                Y.Assert.isFalse(
+                    rootTreeNodeCB.hasClass('tree-node-child-unchecked'),
+                    'rootTreeNode does not have any unchecked decentants.');
+
+                treeView.destroy();
+            }, lazyRenderTimeout);
+        },
+
+        'TreeView generated from HTML markup without CSS classes should expand and collapse': function() {
+            var treeView,
+                originalListElements = Y.all('#createFromHTMLMarkupWithoutClassesTest li'),
+                originalListElementsCount = originalListElements.size(),
+                treeNodes,
+                treeNodesCount;
+
+            treeView = new Y.TreeView({
+                boundingBox: '#createFromHTMLMarkupWithoutClassesTest',
+                contentBox: '#createFromHTMLMarkupWithoutClassesTest > ul'
+            }).render();
+
+            treeNodes = Y.all('#createFromHTMLMarkupWithoutClassesTest .tree-node');
+            treeNodesCount = treeNodes.size();
+
+            Y.Assert.areSame(treeNodesCount, originalListElementsCount);
+
+            treeNodes.each(function(node) {
+                var expand = node.one('.tree-hitarea'),
+                    content = node.one('.tree-node-content');
+
+                if (expand) {
+                    expand.simulate('click');
+
+                    Y.Assert.isTrue(content.hasClass('tree-expanded'));
+
+                    expand.simulate('click');
+
+                    Y.Assert.isTrue(content.hasClass('tree-collapsed'));
+                }
+            });
         }
     }));
 

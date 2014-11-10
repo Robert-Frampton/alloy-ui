@@ -4,7 +4,8 @@
  * @module aui-image-viewer-base
  */
 
-var CSS_CONTROL = A.getClassName('image', 'viewer', 'base', 'control'),
+var CSS_CONTENT = A.getClassName('image', 'viewer', 'base', 'node', 'content'),
+    CSS_CONTROL = A.getClassName('image', 'viewer', 'base', 'control'),
     CSS_CONTROL_LEFT = A.getClassName('image', 'viewer', 'base', 'control', 'left'),
     CSS_CONTROL_RIGHT = A.getClassName('image', 'viewer', 'base', 'control', 'right'),
     CSS_CURRENT_IMAGE = A.getClassName('image', 'viewer', 'base', 'current', 'image'),
@@ -113,7 +114,7 @@ A.ImageViewerBase = A.Base.create(
          * @return {Boolean}
          */
         hasNext: function() {
-            return this.get('circular') || this.get('currentIndex') < this.get('sources').length - 1;
+            return this.get('circular') || (this.get('currentIndex') < (this.get('sources').length - 1));
         },
 
         /**
@@ -123,7 +124,7 @@ A.ImageViewerBase = A.Base.create(
          * @return {Boolean}
          */
         hasPrev: function() {
-            return this.get('circular') || this.get('currentIndex') > 0;
+            return this.get('circular') || (this.get('currentIndex') > 0);
         },
 
         /**
@@ -133,11 +134,11 @@ A.ImageViewerBase = A.Base.create(
          */
         next: function() {
             if (this.hasNext()) {
-                if (this.get('currentIndex') === this.get('sources').length - 1) {
+                if (this.get('currentIndex') === (this.get('sources').length - 1)) {
                     this.set('currentIndex', 0);
                 }
                 else {
-                    this.set('currentIndex', this.get('currentIndex') + 1);
+                    this.set('currentIndex', (this.get('currentIndex') + 1));
                 }
             }
         },
@@ -150,10 +151,10 @@ A.ImageViewerBase = A.Base.create(
         prev: function() {
             if (this.hasPrev()) {
                 if (this.get('currentIndex') === 0) {
-                    this.set('currentIndex', this.get('sources').length - 1);
+                    this.set('currentIndex', (this.get('sources').length - 1));
                 }
                 else {
-                    this.set('currentIndex', this.get('currentIndex') - 1);
+                    this.set('currentIndex', (this.get('currentIndex') - 1));
                 }
             }
         },
@@ -230,7 +231,6 @@ A.ImageViewerBase = A.Base.create(
             else {
                 this._syncControlsUI();
             }
-
         },
 
         /**
@@ -280,7 +280,9 @@ A.ImageViewerBase = A.Base.create(
          * @protected
          */
         _getCurrentImage: function() {
-            return this._getCurrentImageContainer().one('.' + CSS_IMAGE);
+            if (this.get('sources').length) {
+                return this._getCurrentImageContainer().one('.' + CSS_IMAGE);
+            }
         },
 
         /**
@@ -422,18 +424,28 @@ A.ImageViewerBase = A.Base.create(
                 image = A.Node.create(this.TPL_IMAGE),
                 src = this.get('sources')[index];
 
-            container.prepend(image);
+            if (A.Lang.isString(src)) {
+                container.prepend(image);
 
-            this._eventHandles.push(
-                image.once('load', A.bind(this._onImageLoad, this, image, index))
-            );
+                this._eventHandles.push(
+                    image.once('load', A.bind(this._onImageLoad, this, image, index))
+                );
 
-            group = new A.ImgLoadGroup();
-            group.addCustomTrigger('load' + index, this);
-            group.registerImage({
-                domId: image.generateID(),
-                srcUrl: src
-            });
+                group = new A.ImgLoadGroup();
+                group.addCustomTrigger('load' + index, this);
+                group.registerImage({
+                    domId: image.generateID(),
+                    srcUrl: src
+                });
+            }
+            else if (src instanceof A.Node) {
+                container.prepend(src);
+
+                src.setData('loaded', true);
+                src.addClass(CSS_IMAGE);
+                src.addClass(CSS_CONTENT);
+                src.get('parentNode').removeClass(CSS_LOADING);
+            }
         },
 
         /**
@@ -523,7 +535,7 @@ A.ImageViewerBase = A.Base.create(
             var currentIndex = this.get('currentIndex'),
                 image;
 
-            if (!this.get('visible')) {
+            if (!this.get('visible') || !this.get('sources').length) {
                 return;
             }
 
@@ -556,11 +568,13 @@ A.ImageViewerBase = A.Base.create(
          * @protected
          */
         _setCurrentIndex: function(val) {
+            var sourcesLength = this.get('sources').length;
+
             if (val === 'rand') {
-                return Math.floor(Math.random() * this.get('sources').length);
+                return Math.floor(Math.random() * sourcesLength);
             }
             else {
-                return Math.max(Math.min(val, this.get('sources').length - 1), 0);
+                return Math.max(Math.min(val, (sourcesLength - 1)), 0);
             }
         },
 
@@ -772,15 +786,28 @@ A.ImageViewerBase = A.Base.create(
             },
 
             sources: function(srcNode) {
-                var images = srcNode.all('.' + CSS_IMAGE),
+                var backgroundImageStyle,
+                    childImg,
+                    img,
+                    images = srcNode.all('.' + CSS_IMAGE + ', .' + CSS_CONTENT),
+                    isImg,
                     sources = [];
 
                 images.each(function() {
-                    if (this.test('img')) {
-                        sources.push(this.getAttribute('src'));
+                    isImg = this.test('img'),
+                    childImg = this.one('img'),
+                    backgroundImageStyle = this.getStyle('backgroundImage');
+
+                    if (this.hasClass(CSS_CONTENT)) {
+                        sources.push(this);
                     }
-                    else {
-                        sources.push(A.Lang.String.removeAll(this.getStyle('backgroundImage').slice(4, -1), '"'));
+                    else if (isImg || childImg) {
+                        img = isImg ? this : childImg;
+
+                        sources.push(img.getAttribute('src'));
+                    }
+                    else if (backgroundImageStyle !== 'none') {
+                        sources.push(A.Lang.String.removeAll(backgroundImageStyle.slice(4, -1), '"'));
                     }
                 });
 
