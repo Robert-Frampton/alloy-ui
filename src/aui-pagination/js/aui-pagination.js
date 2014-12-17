@@ -53,6 +53,18 @@ var Pagination = A.Component.create({
     ATTRS: {
 
         /**
+         * Boolean indicating if accessibility should be enabled.
+         *
+         * @attribute accessible
+         * @default true
+         * @type Boolean
+         */
+        accessible: {
+            validator: isBoolean,
+            value: true
+        },
+
+        /**
          * When enabled this property allows the navigation to go back to the
          * beggining when it reaches the last page, the opposite behavior is
          * also true. Incremental page navigation could happen clicking the
@@ -210,6 +222,10 @@ var Pagination = A.Component.create({
                 instance._dispatchRequest({
                     page: page
                 });
+            }
+
+            if (instance.get('accessible')) {
+                instance.plug(A.Plugin.PaginationAccessibility);
             }
         },
 

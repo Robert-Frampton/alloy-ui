@@ -4,8 +4,17 @@
             "node-event-delegate",
             "aui-node",
             "aui-component",
+            "aui-pagination-accessibility",
             "widget-htmlparser"
         ],
         "skinnable": true
+    },
+
+    "aui-pagination-accessibility": {
+        "requires": [
+            "aui-aria",
+            "node-focusmanager",
+            "plugin"
+        ]
     }
 }

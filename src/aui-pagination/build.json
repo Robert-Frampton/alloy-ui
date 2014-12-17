@@ -5,6 +5,12 @@
             "jsfiles": [
                 "js/aui-pagination.js"
             ]
+        },
+
+        "aui-pagination-accessibility": {
+        	"jsfiles": [
+        		"js/aui-pagination-accessibility.js"
+        	]
         }
     }
 }
