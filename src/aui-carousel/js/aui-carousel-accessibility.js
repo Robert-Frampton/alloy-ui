@@ -10,6 +10,16 @@ function CarouselAccessibility() {}
 
 CarouselAccessibility.prototype = {
     /**
+     * Holds the event handles for any bind event from the internal
+     * implementation.
+     *
+     * @property _eventHandles
+     * @type {Array}
+     * @protected
+     */
+    _eventHandles: null,
+
+    /**
      * Construction logic executed during instantiation.
      * Lifecycle.
      *
@@ -22,15 +32,26 @@ CarouselAccessibility.prototype = {
     },
 
     /**
+     * Destructor lifecycle implementation for the CarouselAccessibility class.
+     * Purges events attached to the node (and all child nodes).
+     *
+     * @method destroy
+     * @protected
+     */
+    destroy: function() {
+        (new A.EventHandle(this._eventHandles)).detach();
+    },
+
+    /**
      * Binds the keydown event related to the carousel's controls.
      *
      * @method _bindKeypress
      * @protected
      */
     _bindKeypress: function() {
-        this._eventHandles.push(
+        this._eventHandles = [
             this.get('boundingBox').on('keydown', A.bind(this._handleKeypressEvent, this))
-        );
+        ];
     },
 
     /**
