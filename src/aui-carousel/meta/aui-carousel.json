@@ -6,5 +6,12 @@
             "aui-component"
         ],
         "skinnable": true
+    },
+
+    "aui-carousel-accessibility": {
+        "requires": [
+            "aui-aria",
+            "aui-carousel"
+        ]
     }
 }

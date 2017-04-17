@@ -5,6 +5,12 @@
             "jsfiles": [
                 "js/aui-carousel.js"
             ]
+        },
+
+        "aui-carousel-accessibility": {
+            "jsfiles": [
+                "js/aui-carousel-accessibility.js"
+            ]
         }
     }
 }
