@@ -173,6 +173,12 @@ Y.mix(YUI.Env[Y.version].modules, {
         ],
         "skinnable": true
     },
+    "aui-carousel-accessibility": {
+        "requires": [
+            "aui-aria",
+            "aui-carousel"
+        ]
+    },
     "aui-char-counter": {
         "requires": [
             "aui-node",
@@ -1480,4 +1486,4 @@ Y.mix(YUI.Env[Y.version].modules, {
         ]
     }
 });
-YUI.Env[Y.version].md5 = '61c8295230e4f1de4df2b86169983827';
+YUI.Env[Y.version].md5 = '5d349c196c5786f4b8c9407a90f44331';
