@@ -150,6 +150,12 @@
         ],
         "skinnable": true
     },
+    "aui-carousel-accessibility": {
+        "requires": [
+            "aui-aria",
+            "aui-carousel"
+        ]
+    },
     "aui-carousel-mobile-touch": {
         "condition": {
             "name": "aui-carousel-mobile-touch",
